@@ -43,6 +43,16 @@ else
     echo "Directory $SOC_DIR already exists."
 fi
 
+# Copy modules directory to /opt/soc if it doesn't already exist
+MODULES_SRC="modules"
+MODULES_DEST="$SOC_DIR/modules"
+if [ ! -d "$MODULES_DEST" ]; then
+    echo "Copying modules to $SOC_DIR..."
+    sudo cp -r "$MODULES_SRC" "$MODULES_DEST"
+else
+    echo "Modules directory already exists in $SOC_DIR. Skipping copy."
+fi
+
 cd "$SOC_DIR"
 
 # Update system packages
@@ -76,7 +86,7 @@ if [ ! -d "wazuh-docker" ]; then
         echo "Removing existing SSL certificates folder..."
         sudo rm -rf config/wazuh_indexer_ssl_certs
     fi
-
+    
     echo "Running certificate creation script..."
     sudo docker-compose -f generate-indexer-certs.yml run --rm generator
 
@@ -95,17 +105,10 @@ if [ ! -d "iris-web" ]; then
     cd iris-web
 
     # Rename env.model to .env
-    sudo cp .env.model .env
-
-    # Update .env file with required changes
-    sudo sed -i 's|POSTGRES_PASSWORD=__MUST_BE_CHANGED__|POSTGRES_PASSWORD=socarium|' .env
-    sudo sed -i 's|POSTGRES_ADMIN_USER=raptor|POSTGRES_ADMIN_USER=socarium|' .env
-    sudo sed -i 's|POSTGRES_ADMIN_PASSWORD=__MUST_BE_CHANGED__|POSTGRES_ADMIN_PASSWORD=socarium|' .env
-    sudo sed -i 's|#IRIS_ADM_PASSWORD=MySuperAdminPassword!|IRIS_ADM_PASSWORD=socarium|' .env
-    sudo sed -i 's|#IRIS_ADM_USERNAME=administrator|IRIS_ADM_USERNAME=administrator|' .env
-    sudo sed -i 's|INTERFACE_HTTPS_PORT=443|INTERFACE_HTTPS_PORT=8443|' .env
-
-    # build image from source
+    sudo cp /opt/soc/modules/iris-web/.env.model .env
+    sudo cp /opt/soc/modules/iris-web/docker-compose.yml docker-compose.yml 
+    sudo cp /opt/soc/modules/iris-web/docker-compose.base.yml docker-compose.base.yml
+    sudo cp /opt/soc/modules/iris-web/docker-compose.dev.yml docker-compose.dev.yml
     docker-compose build
     docker-compose up -d
     cd "$SOC_DIR"
