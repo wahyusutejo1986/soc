@@ -1,153 +1,141 @@
 #!/bin/bash
 
-LOG_FILE="/opt/socarium/install_logs/install_all.log"
-INSTALL_PATH="/opt/socarium"
-mkdir -p $INSTALL_PATH
-mkdir -p /opt/socarium/install_logs
-
-# Color definitions
-GREEN="\033[0;32m"
-RESET="\033[0m"
-
-# Function to display progress bar
-progress_bar() {
-    local PROGRESS=$1
-    echo -ne "\r================== ${PROGRESS}% Completed ================="
+# Function to check if a command exists
+command_exists() {
+    command -v "$1" >/dev/null 2>&1
 }
 
-# Function to execute commands with real installations and checklist
-run_step() {
-    local STEP_NAME=$1
-    local STEP_COMMANDS=("${@:2}") # All commands passed as arguments
-
-    echo -e "\n==================="
-    echo "Current Process: $STEP_NAME"
-    echo "==================="
-
-    local LINE_COUNT=0
-    local COMMAND_COUNT=0
-    local TOTAL_COMMANDS=${#STEP_COMMANDS[@]}
-    local STATUS=()
-
-    # Initialize status array with empty strings
-    for ((i = 0; i < TOTAL_COMMANDS; i++)); do
-        STATUS[i]=""
-    done
-
-    for COMMAND in "${STEP_COMMANDS[@]}"; do
-        if [ $LINE_COUNT -eq 10 ]; then
-            tput cuu 10 # Move cursor up 10 lines
-            LINE_COUNT=0
-        fi
-
-        # Display current status for all commands
-        for ((i = 0; i < TOTAL_COMMANDS; i++)); do
-            if [ $i -eq $COMMAND_COUNT ]; then
-                echo -ne "${STEP_COMMANDS[i]} ${STATUS[i]}\n"
-            else
-                echo -ne "${STEP_COMMANDS[i]} ${STATUS[i]}\n"
-            fi
-        done
-
-        # Execute the command
-        eval "$COMMAND" >> $LOG_FILE 2>&1
-        if [ $? -eq 0 ]; then
-            STATUS[COMMAND_COUNT]="${GREEN}(complete)${RESET}"
-        else
-            echo -e "\n❌ Error during: $COMMAND"
-            echo "Check logs: $LOG_FILE"
-            exit 1
-        fi
-
-        COMMAND_COUNT=$((COMMAND_COUNT + 1))
-        LINE_COUNT=$((LINE_COUNT + 1))
-
-        # Update terminal display
-        tput cuu $TOTAL_COMMANDS
-    done
-
-    # Complete section
-    echo "==================="
-    echo "Process Completed for: $STEP_NAME"
-    echo "==================="
-    sleep 1
+# Function to get IP address of interface ens3
+get_ip_address() {
+    ip -o -4 addr list ens3 | awk '{print $4}' | cut -d'/' -f1
 }
 
-# Installation processes
-install_prerequisites() {
-    progress_bar 10
-    run_step "Install Prerequisites" \
-        "sudo apt update" \
-        "sudo apt install -y git curl wget" \
-        "sudo apt install -y python3-pip" \
-        "sudo apt install -y docker docker-compose" \
-        "sudo systemctl start docker && sudo systemctl enable docker"
+# Function to check and ensure container images, volumes, and containers are healthy
+ensure_container_health() {
+    local service_name=$1
+    local compose_file=$2
+
+    echo "Checking health of $service_name..."
+    if [ -z "$(docker images -q "$service_name")" ]; then
+        echo "$service_name image not found. Building..."
+        docker-compose -f "$compose_file" build
+    fi
+
+    if [ -z "$(docker volume ls | grep "$service_name")" ]; then
+        echo "$service_name volume not found. Creating..."
+        docker-compose -f "$compose_file" up -d
+    fi
+
+    if [ -z "$(docker ps -q -f name="$service_name")" ]; then
+        echo "$service_name container not running. Starting..."
+        docker-compose -f "$compose_file" up -d
+    else
+        echo "$service_name container is already running."
+    fi
 }
 
-install_wazuh() {
-    progress_bar 30
-    run_step "Install Wazuh" \
-        "git clone https://github.com/wazuh/wazuh-docker.git $INSTALL_PATH/wazuh-docker" \
-        "cd $INSTALL_PATH/wazuh-docker/single-node" \
-        "docker-compose build" \
-        "docker-compose up -d" \
-        "docker ps"
-}
+# Create /opt/soc directory if it doesn't exist
+SOC_DIR="/opt/soc"
+if [ ! -d "$SOC_DIR" ]; then
+    echo "Creating directory $SOC_DIR..."
+    sudo mkdir -p "$SOC_DIR"
+else
+    echo "Directory $SOC_DIR already exists."
+fi
 
-install_opencti() {
-    progress_bar 50
-    run_step "Install OpenCTI" \
-        "git clone https://github.com/OpenCTI-Platform/docker.git $INSTALL_PATH/opencti" \
-        "cd $INSTALL_PATH/opencti" \
-        "cp .env.sample .env" \
-        "docker-compose build" \
-        "docker-compose up -d" \
-        "docker ps"
-}
+cd "$SOC_DIR"
 
-install_shuffle() {
-    progress_bar 70
-    run_step "Install Shuffle SOAR" \
-        "git clone https://github.com/shuffle/Shuffle.git $INSTALL_PATH/Shuffle" \
-        "cd $INSTALL_PATH/Shuffle" \
-        "docker-compose build" \
-        "docker-compose up -d" \
-        "docker ps"
-}
+# Update system packages
+echo "Updating system packages..."
+sudo apt-get update -y
 
-install_dfir_iris() {
-    progress_bar 90
-    run_step "Install DFIR IRIS" \
-        "git clone https://github.com/dfir-iris/iris-web.git $INSTALL_PATH/iris_web" \
-        "cd $INSTALL_PATH/iris_web" \
-        "cp .env.template .env" \
-        "docker-compose build" \
-        "docker-compose up -d" \
-        "docker ps"
-}
+# Install common prerequisites
+echo "Installing common prerequisites..."
+for pkg in curl wget gnupg apt-transport-https unzip python3 python3-pip docker.io docker-compose git; do
+    if ! command_exists "$pkg"; then
+        echo "Installing $pkg..."
+        sudo apt-get install -y "$pkg"
+    else
+        echo "$pkg is already installed. Skipping."
+    fi
+done
 
-install_misp() {
-    progress_bar 100
-    run_step "Install MISP" \
-        "git clone https://github.com/MISP/misp-docker.git $INSTALL_PATH/MISP" \
-        "cd $INSTALL_PATH/MISP" \
-        "cp template.env .env" \
-        "docker-compose build" \
-        "docker-compose up -d" \
-        "docker ps"
-}
+# Wazuh installation
+echo "Installing Wazuh..."
+if [ ! -d "wazuh-docker" ]; then
+    echo "Cloning Wazuh Docker repository..."
+    sudo git clone https://github.com/wazuh/wazuh-docker.git -b v4.9.2
+    cd /opt/soc/wazuh-docker/single-node/
 
-# Full Installation Workflow
-install_all() {
-    echo "Installation progress, please wait....."
-    install_prerequisites
-    install_wazuh
-    install_opencti
-    install_shuffle
-    install_dfir_iris
-    install_misp
-    echo -e "\n✅ All SOC platforms installed successfully!"
-}
+    echo "Setting max_map_count..."
+    sudo sysctl -w vm.max_map_count=262144
 
-# Start the installation
-install_all
+    echo "Adding environment to generate-indexer-certs.yml..."
+    sudo sed -i '/generator:/a \    environment:\n      - HTTP_PROXY=0.0.0.0' /opt/soc/wazuh-docker/single-node/generate-indexer-certs.yml
+
+    echo "Running certificate creation script..."
+    sudo docker-compose -f generate-indexer-certs.yml run --rm generator
+
+    echo "Starting Wazuh environment with Docker Compose..."
+    sudo docker-compose up -d
+    cd "$SOC_DIR"
+else
+    echo "Wazuh already installed."
+    #ensure_container_health "wazuh" "wazuh-docker/single-node/docker-compose.yml"
+fi
+
+# DFIR IRIS installation
+echo "Installing DFIR IRIS..."
+if [ ! -d "iris-web" ]; then
+    git clone https://github.com/dfir-iris/iris-web.git
+    cd iris-web
+
+    # Rename env.model to .env
+    sudo cp .env.model .env
+
+    # Update .env file with required changes
+    sudo sed -i 's|POSTGRES_PASSWORD=__MUST_BE_CHANGED__|POSTGRES_PASSWORD=socarium|' .env
+    sudo sed -i 's|POSTGRES_ADMIN_USER=raptor|POSTGRES_ADMIN_USER=socarium|' .env
+    sudo sed -i 's|POSTGRES_ADMIN_PASSWORD=__MUST_BE_CHANGED__|POSTGRES_ADMIN_PASSWORD=socarium|' .env
+    sudo sed -i 's|#IRIS_ADM_PASSWORD=MySuperAdminPassword!|IRIS_ADM_PASSWORD=socarium|' .env
+    sudo sed -i 's|#IRIS_ADM_USERNAME=administrator|IRIS_ADM_USERNAME=administrator|' .env
+    sudo sed -i 's|INTERFACE_HTTPS_PORT=443|INTERFACE_HTTPS_PORT=8443|' .env
+
+    # Update docker-compose.base.yml with HTTPS port
+    sudo sed -i 's|${INTERFACE_HTTPS_PORT:-443}:${INTERFACE_HTTPS_PORT:-443}|${INTERFACE_HTTPS_PORT:-8443}:${INTERFACE_HTTPS_PORT:-8443}|' docker-compose.base.yml
+    docker-compose build
+    docker-compose up -d
+    cd "$SOC_DIR"
+else
+    echo "DFIR IRIS already installed. Checking health..."
+    #ensure_container_health "dfir-iris" "iris-web/docker-compose.yml"
+fi
+
+# Shuffle installation
+echo "Installing Shuffle..."
+if [ ! -d "Shuffle" ]; then
+    git clone https://github.com/Shuffle/Shuffle.git
+    cd Shuffle
+    if [ ! -d "shuffle-database" ]; then
+        mkdir shuffle-database
+    fi
+    sudo useradd opensearch
+    sudo chown -R 1000:1000 shuffle-database
+    sudo swapoff -a
+    sudo sysctl -w vm.max_map_count=262144
+    sudo sed -i 's|9200:9200|9202:9200|' docker-compose.yml
+    docker compose up -d
+    cd "$SOC_DIR"
+else
+    echo "Shuffle already installed. Checking health..."
+    #ensure_container_health "shuffle" "Shuffle/docker-compose.yml"
+fi
+
+# Summary
+echo "Installation completed for:
+- Wazuh
+- DFIR IRIS
+- Shuffle"
+
+# Tips
+echo "Ensure all services are running properly. Use 'docker ps' to check containers or refer to individual documentation for further configurations."
