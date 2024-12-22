@@ -89,31 +89,7 @@ if [ ! -d "wazuh-docker" ]; then
     sudo sysctl -w vm.max_map_count=262144
 
     # Add socarium-network to docker-compose.yml
-    echo "Adding socarium-network to docker-compose.yml..."
-    NETWORK_NAME="socarium-network"
-    COMPOSE_FILE="docker-compose.yml"
-
-    if ! grep -q "$NETWORK_NAME" "$COMPOSE_FILE"; then
-        # Append the networks section to each service
-        sed -i '/services:/!b;n;/^  [a-zA-Z0-9._-]*:$/!b;n;/^    networks:/!{a\
-        networks:\
-          - '"$NETWORK_NAME"'
-        }' "$COMPOSE_FILE"
-
-        # Add the networks definition at the end of the file if not already present
-        if ! grep -q "^networks:" "$COMPOSE_FILE"; then
-            echo -e "\nnetworks:" >> "$COMPOSE_FILE"
-            echo "  $NETWORK_NAME:" >> "$COMPOSE_FILE"
-            echo "    external: true" >> "$COMPOSE_FILE"
-        else
-            # Append the network definition to the existing networks section if missing
-            if ! grep -q "  $NETWORK_NAME:" "$COMPOSE_FILE"; then
-                echo "  $NETWORK_NAME:" >> "$COMPOSE_FILE"
-                echo "    external: true" >> "$COMPOSE_FILE"
-            fi
-        fi
-    fi
-
+    sudo cp /opt/soc/modules/wazuh/docker-compose.yml docker-compose.yml 
     # Check and handle SSL certificates folder
     echo "Checking and preparing SSL certificates..."
     if [ -d "config/wazuh_indexer_ssl_certs" ]; then
@@ -143,8 +119,8 @@ if [ ! -d "iris-web" ]; then
     sudo cp /opt/soc/modules/iris-web/docker-compose.yml docker-compose.yml 
     sudo cp /opt/soc/modules/iris-web/docker-compose.base.yml docker-compose.base.yml
     sudo cp /opt/soc/modules/iris-web/docker-compose.dev.yml docker-compose.dev.yml
-    docker-compose build
-    docker-compose up -d
+    sudo docker-compose build
+    sudo docker-compose up -d
     cd "$SOC_DIR"
 else
     echo "DFIR IRIS already installed. Checking health..."
@@ -164,7 +140,7 @@ if [ ! -d "Shuffle" ]; then
     sudo swapoff -a
     sudo sysctl -w vm.max_map_count=262144
     sudo cp /opt/soc/modules/shuffle/docker-compose.yml docker-compose.yml
-    docker compose up -d
+    sudo docker compose up -d
     cd "$SOC_DIR"
 else
     echo "Shuffle already installed. Checking health..."
