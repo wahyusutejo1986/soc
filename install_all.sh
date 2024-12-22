@@ -54,7 +54,7 @@ else
 fi
 
 # Check and create Docker network socarium-network if it doesn't exist
-if docker network ls | grep -q "socarium-network"; then
+if sudo docker network ls | grep "socarium-network"; then
     echo "Docker network 'socarium-network' already exists. Skipping creation."
 else
     echo "Creating Docker network 'socarium-network'..."
@@ -90,7 +90,7 @@ if [ ! -d "wazuh-docker" ]; then
 
     # Create the socarium-network if it doesn't exist
     echo "Ensuring socarium-network exists..."
-    if ! sudo docker network ls | grep -q "socarium-network"; then
+    if ! sudo docker network ls | grep "socarium-network"; then
         echo "Creating external network: socarium-network"
         sudo docker network create socarium-network
     else
@@ -125,7 +125,7 @@ if [ ! -d "iris-web" ]; then
 
     # Create the socarium-network if it doesn't exist
     echo "Ensuring socarium-network exists..."
-    if ! sudo docker network ls | grep -q "socarium-network"; then
+    if ! sudo docker network ls | grep "socarium-network"; then
         echo "Creating external network: socarium-network"
         sudo docker network create socarium-network
     else
@@ -159,7 +159,7 @@ if [ ! -d "Shuffle" ]; then
 
     # Create the socarium-network if it doesn't exist
     echo "Ensuring socarium-network exists..."
-    if ! sudo docker network ls | grep -q "socarium-network"; then
+    if ! sudo docker network ls | grep "socarium-network"; then
         echo "Creating external network: socarium-network"
         sudo docker network create socarium-network
     else
