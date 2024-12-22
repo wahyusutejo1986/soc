@@ -88,6 +88,15 @@ if [ ! -d "wazuh-docker" ]; then
     echo "Setting max_map_count..."
     sudo sysctl -w vm.max_map_count=262144
 
+    # Create the socarium-network if it doesn't exist
+    echo "Ensuring socarium-network exists..."
+    if ! sudo docker network ls | grep -q "socarium-network"; then
+        echo "Creating external network: socarium-network"
+        sudo docker network create socarium-network
+    else
+        echo "Network socarium-network already exists."
+    fi
+
     # Add socarium-network to docker-compose.yml
     sudo cp /opt/soc/modules/wazuh/docker-compose.yml docker-compose.yml 
     # Check and handle SSL certificates folder
@@ -114,6 +123,14 @@ if [ ! -d "iris-web" ]; then
     git clone https://github.com/dfir-iris/iris-web.git
     cd iris-web
 
+    # Create the socarium-network if it doesn't exist
+    echo "Ensuring socarium-network exists..."
+    if ! sudo docker network ls | grep -q "socarium-network"; then
+        echo "Creating external network: socarium-network"
+        sudo docker network create socarium-network
+    else
+        echo "Network socarium-network already exists."
+    fi
     # Rename env.model to .env
     sudo cp /opt/soc/modules/iris-web/.env.model .env
     sudo cp /opt/soc/modules/iris-web/docker-compose.yml docker-compose.yml 
@@ -139,6 +156,15 @@ if [ ! -d "Shuffle" ]; then
     sudo chown -R 1000:1000 shuffle-database
     sudo swapoff -a
     sudo sysctl -w vm.max_map_count=262144
+
+    # Create the socarium-network if it doesn't exist
+    echo "Ensuring socarium-network exists..."
+    if ! sudo docker network ls | grep -q "socarium-network"; then
+        echo "Creating external network: socarium-network"
+        sudo docker network create socarium-network
+    else
+        echo "Network socarium-network already exists."
+    fi
     sudo cp /opt/soc/modules/shuffle/docker-compose.yml docker-compose.yml
     sudo docker compose up -d
     cd "$SOC_DIR"
