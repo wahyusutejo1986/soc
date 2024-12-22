@@ -70,8 +70,12 @@ if [ ! -d "wazuh-docker" ]; then
     echo "Setting max_map_count..."
     sudo sysctl -w vm.max_map_count=262144
 
-    echo "Adding environment to generate-indexer-certs.yml..."
-    sudo sed -i '/generator:/a \    environment:\n      - HTTP_PROXY=0.0.0.0' /opt/soc/wazuh-docker/single-node/generate-indexer-certs.yml
+    # Check and handle SSL certificates folder
+    echo "Checking and preparing SSL certificates..."
+    if [ -d "config/wazuh_indexer_ssl_certs" ]; then
+        echo "Removing existing SSL certificates folder..."
+        sudo rm -rf config/wazuh_indexer_ssl_certs
+    fi
 
     echo "Running certificate creation script..."
     sudo docker-compose -f generate-indexer-certs.yml run --rm generator
@@ -101,8 +105,7 @@ if [ ! -d "iris-web" ]; then
     sudo sed -i 's|#IRIS_ADM_USERNAME=administrator|IRIS_ADM_USERNAME=administrator|' .env
     sudo sed -i 's|INTERFACE_HTTPS_PORT=443|INTERFACE_HTTPS_PORT=8443|' .env
 
-    # Update docker-compose.base.yml with HTTPS port
-    sudo sed -i 's|${INTERFACE_HTTPS_PORT:-443}:${INTERFACE_HTTPS_PORT:-443}|${INTERFACE_HTTPS_PORT:-8443}:${INTERFACE_HTTPS_PORT:-8443}|' docker-compose.base.yml
+    # build image from source
     docker-compose build
     docker-compose up -d
     cd "$SOC_DIR"
