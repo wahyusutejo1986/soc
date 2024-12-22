@@ -53,6 +53,14 @@ else
     echo "Modules directory already exists in $SOC_DIR. Skipping copy."
 fi
 
+# Check and create Docker network socarium-network if it doesn't exist
+if docker network ls | grep -q "socarium-network"; then
+    echo "Docker network 'socarium-network' already exists. Skipping creation."
+else
+    echo "Creating Docker network 'socarium-network'..."
+    sudo docker network create socarium-network
+fi
+
 cd "$SOC_DIR"
 
 # Update system packages
@@ -79,6 +87,32 @@ if [ ! -d "wazuh-docker" ]; then
 
     echo "Setting max_map_count..."
     sudo sysctl -w vm.max_map_count=262144
+
+    # Add socarium-network to docker-compose.yml
+    echo "Adding socarium-network to docker-compose.yml..."
+    NETWORK_NAME="socarium-network"
+    COMPOSE_FILE="docker-compose.yml"
+
+    if ! grep -q "$NETWORK_NAME" "$COMPOSE_FILE"; then
+        # Append the networks section to each service
+        sed -i '/services:/!b;n;/^  [a-zA-Z0-9._-]*:$/!b;n;/^    networks:/!{a\
+        networks:\
+          - '"$NETWORK_NAME"'
+        }' "$COMPOSE_FILE"
+
+        # Add the networks definition at the end of the file if not already present
+        if ! grep -q "^networks:" "$COMPOSE_FILE"; then
+            echo -e "\nnetworks:" >> "$COMPOSE_FILE"
+            echo "  $NETWORK_NAME:" >> "$COMPOSE_FILE"
+            echo "    external: true" >> "$COMPOSE_FILE"
+        else
+            # Append the network definition to the existing networks section if missing
+            if ! grep -q "  $NETWORK_NAME:" "$COMPOSE_FILE"; then
+                echo "  $NETWORK_NAME:" >> "$COMPOSE_FILE"
+                echo "    external: true" >> "$COMPOSE_FILE"
+            fi
+        fi
+    fi
 
     # Check and handle SSL certificates folder
     echo "Checking and preparing SSL certificates..."
@@ -129,7 +163,7 @@ if [ ! -d "Shuffle" ]; then
     sudo chown -R 1000:1000 shuffle-database
     sudo swapoff -a
     sudo sysctl -w vm.max_map_count=262144
-    sudo sed -i 's|9200:9200|9202:9200|' docker-compose.yml
+    sudo cp /opt/soc/modules/shuffle/docker-compose.yml docker-compose.yml
     docker compose up -d
     cd "$SOC_DIR"
 else
