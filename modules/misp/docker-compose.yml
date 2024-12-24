@@ -32,8 +32,8 @@ services:
     restart: always
     environment:
       - "MYSQL_USER=${MYSQL_USER:-misp}"
-      - "MYSQL_PASSWORD=${MYSQL_PASSWORD:-misp}"
-      - "MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD:-misp}"
+      - "MYSQL_PASSWORD=${MYSQL_PASSWORD:-socarium2024}"
+      - "MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD:-socarium2024}"
       - "MYSQL_DATABASE=${MYSQL_DATABASE:-misp}"
     command: "\
       --innodb-buffer-pool-size=${INNODB_BUFFER_POOL_SIZE:-2048M} \
