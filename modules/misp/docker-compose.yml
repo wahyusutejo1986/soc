@@ -35,6 +35,14 @@ services:
       - "MYSQL_PASSWORD=${MYSQL_PASSWORD:-socarium2024}"
       - "MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD:-socarium2024}"
       - "MYSQL_DATABASE=${MYSQL_DATABASE:-misp}"
+      - "MISP_MODULES_FQDN=http://misp-modules"
+      - "WORKERS=1"      
+      - "NUM_WORKERS_DEFAULT=5"    # To set the number of default workers
+      - "NUM_WORKERS_PRIO=5"       # To set the number of prio workers
+      - "NUM_WORKERS_EMAIL=5"       # To set the number of email workers
+      - "NUM_WORKERS_UPDATE=1"      # To set the number of update workers
+      - "NUM_WORKERS_CACHE=5"       # To set the number of cache workers
+
     command: "\
       --innodb-buffer-pool-size=${INNODB_BUFFER_POOL_SIZE:-2048M} \
       --innodb-change-buffering=${INNODB_CHANGE_BUFFERING:-none} \
@@ -93,8 +101,8 @@ services:
       start_period: 30s
       start_interval: 30s
     ports:
-      - "80:80"
-      - "443:443"
+      - "83:80"
+      - "4443:443"
     volumes:
       - "./configs/:/var/www/MISP/app/Config/"
       - "./logs/:/var/www/MISP/app/tmp/logs/"
