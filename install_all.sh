@@ -63,15 +63,17 @@ fi
 
 cd "$SOC_DIR"
 
-# Update system packages
-echo "Updating system packages..."
-sudo apt-get update -y
-
 # Install common prerequisites
 echo "Installing common prerequisites..."
-for pkg in curl wget gnupg apt-transport-https unzip python3 python3-pip docker.io docker-compose git; do
+for pkg in curl wget gnupg apt-transport-https ca-certificates lsb-release unzip python3 python3-pip docker.io docker-compose git docker-ce docker-ce-cli containerd.io docker-compose-plugin; do
     if ! command_exists "$pkg"; then
         echo "Installing $pkg..."
+        sudo mkdir -p /etc/apt/keyrings
+        sudo curl -fsSL https://download.docker.com/linux/debian/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+        sudo echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/debian \ $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+        # Update system packages
+        echo "Updating system packages..."
+        sudo apt-get update -y
         sudo apt-get install -y "$pkg"
     else
         echo "$pkg is already installed. Skipping."
