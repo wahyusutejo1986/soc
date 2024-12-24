@@ -120,7 +120,7 @@ fi
 # DFIR IRIS installation
 echo "Installing DFIR IRIS..."
 if [ ! -d "iris-web" ]; then
-    git clone https://github.com/dfir-iris/iris-web.git
+    git clone https://github.com/dfir-iris/iris-web.git -b v2.4.19
     cd iris-web
 
     # Create the socarium-network if it doesn't exist
@@ -147,7 +147,7 @@ fi
 # Shuffle installation
 echo "Installing Shuffle..."
 if [ ! -d "Shuffle" ]; then
-    git clone https://github.com/Shuffle/Shuffle.git
+    git clone https://github.com/Shuffle/Shuffle.git -b v1.4.2
     cd Shuffle
     if [ ! -d "shuffle-database" ]; then
         mkdir shuffle-database
