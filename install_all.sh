@@ -1,13 +1,10 @@
 #!/bin/bash
 
+set -e  # Exit on error
+
 # Function to check if a command exists
 command_exists() {
     command -v "$1" >/dev/null 2>&1
-}
-
-# Function to get IP address of interface ens3
-get_ip_address() {
-    ip -o -4 addr list ens3 | awk '{print $4}' | cut -d'/' -f1
 }
 
 # Function to check and ensure container images, volumes, and containers are healthy
@@ -62,19 +59,6 @@ else
 fi
 
 cd "$SOC_DIR"
-
-# Install common prerequisites
-echo "Installing common prerequisites..."
-for pkg in curl wget gnupg apt-transport-https ca-certificates lsb-release unzip python3 python3-pip docker.io docker-compose git docker-ce docker-ce-cli containerd.io docker-compose-plugin; do
-    if ! command_exists "$pkg"; then        
-        # Update system packages
-        echo "Updating system packages..."
-        sudo apt-get update -y
-        sudo apt-get install -y "$pkg"
-    else
-        echo "$pkg is already installed. Skipping."
-    fi
-done
 
 # Wazuh installation
 echo "Installing Wazuh..."
@@ -188,6 +172,7 @@ if [ ! -d "misp" ]; then
 
     sudo cp /opt/soc/modules/misp/template.env .env
     sudo cp /opt/soc/modules/misp/docker-compose.yml docker-compose.yml
+    sudo docker-compose pull
     sudo docker compose up -d
     cd "$SOC_DIR"
 else
@@ -199,7 +184,8 @@ fi
 echo "Installation completed for:
 - Wazuh
 - DFIR IRIS
-- Shuffle"
+- Shuffle
+- MISP"
 
 # Tips
 echo "Ensure all services are running properly. Use 'docker ps' to check containers or refer to individual documentation for further configurations."
