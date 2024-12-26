@@ -1,6 +1,7 @@
 #!/bin/bash
 
 set -e  # Exit on error
+BASE_DIR=$(pwd)
 
 # Function to check if a command exists
 command_exists() {
@@ -201,54 +202,14 @@ fi
 
 echo "Installing Grafana..."
 if [ ! -d "grafana" ]; then
-    echo "Setting up Grafana container..."
-    sudo docker volume create grafana-storage
-    sudo docker run -d -p 3000:3000 --name grafana --volume grafana-storage grafana/grafana-oss:11.4.0-ubuntu    
+    #echo "Setting up Grafana container..."
+    #sudo docker volume create grafana-storage
+    #sudo docker run -d -p 3000:3000 --name grafana --volume grafana-storage grafana/grafana-oss:11.4.0-ubuntu    
+    cd $BASE_DIR/modules/grafana/
+    sudo docker-compose up -d
 else
     echo "Grafana already installed. Checking health..."
     sudo docker ps --filter "name=grafana"
-fi
-
-# Prometheus setup
-PROMETHEUS_CONFIG="prometheus.yml"
-PROMETHEUS_PORT=9090
-echo "Setting up Prometheus..."
-if [ ! -f $PROMETHEUS_CONFIG ]; then
-    echo "Creating Prometheus configuration file..."
-    cat <<EOF > $PROMETHEUS_CONFIG
-global:
-  scrape_interval: 5s
-
-scrape_configs:
-  - job_name: 'prometheus'
-    static_configs:
-      - targets: ['localhost:$PROMETHEUS_PORT']
-
-  - job_name: 'cadvisor'
-    static_configs:
-      - targets: ['localhost:9323']
-EOF
-    echo "Prometheus configuration created at $PROMETHEUS_CONFIG."
-else
-    echo "Prometheus configuration already exists."
-fi
-
-# Deploy Prometheus
-if [ ! "$(sudo docker ps -q -f name=prometheus)" ]; then
-    echo "Deploying Prometheus container..."
-    sudo docker run -d --name prometheus -p $PROMETHEUS_PORT:9090 -v $(pwd)/$PROMETHEUS_CONFIG:/etc/prometheus/prometheus.yml prom/prometheus
-else
-    echo "Prometheus container is already running."
-fi
-
-# cAdvisor setup
-CADVISOR_PORT=9323
-echo "Setting up cAdvisor..."
-if [ ! "$(sudo docker ps -q -f name=cadvisor)" ]; then
-    echo "Deploying cAdvisor container..."
-    sudo docker run -d --name=cadvisor -p $CADVISOR_PORT:8282 --volume=/:/rootfs:ro --volume=/var/run:/var/run:ro --volume=/sys:/sys:ro --volume=/var/lib/docker/:/var/lib/docker:ro gcr.io/cadvisor/cadvisor
-else
-    echo "cAdvisor container is already running."
 fi
 
 # Summary
