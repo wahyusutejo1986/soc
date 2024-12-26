@@ -121,7 +121,7 @@ if [ ! -d "iris-web" ]; then
     sudo cp /opt/soc/modules/iris-web/docker-compose.yml docker-compose.yml
     sudo cp /opt/soc/modules/iris-web/docker-compose.base.yml docker-compose.base.yml
     sudo cp /opt/soc/modules/iris-web/docker-compose.dev.yml docker-compose.dev.yml
-    sudo docker-compose pull
+    sudo docker-compose build
     sudo docker-compose up -d
     cd "$SOC_DIR"
 else
@@ -183,9 +183,9 @@ if [ ! -d "misp-docker" ]; then
     #copy template.env to .env
     cp template.env .env
     #add value for variable BASE_URL=https://localhost:10443/
-    sudo sed -i 's/^BASE_URL=.*/BASE_URL=https:\/\/localhost:10443/' .env
-    #prevent port conflict with other platform to 8080 for http and 10443 for https
-    sudo sed -i 's/- "80:80"/- "8080:80"/g; s/- "443:443"/- "10443:443"/g' docker-compose.yml
+    sudo sed -i 's/^BASE_URL=.*/BASE_URL=https:\/\/103.82.92.195:10443/' .env
+    #prevent port conflict with other platform to 8181 for http and 10443 for https
+    sudo sed -i 's/- "80:80"/- "8181:80"/g; s/- "443:443"/- "10443:443"/g' docker-compose.yml
     #pull image for faster deployment instead of build
     sudo docker-compose pull
     #running the containers
@@ -197,12 +197,67 @@ else
     sudo docker ps --filter "name=misp"
 fi
 
+# Grafana installation
+
+echo "Installing Grafana..."
+if [ ! -d "grafana" ]; then
+    echo "Setting up Grafana container..."
+    sudo docker volume create grafana-storage
+    sudo docker run -d -p 3000:3000 --name grafana --volume grafana-storage grafana/grafana-oss:11.4.0-ubuntu    
+else
+    echo "Grafana already installed. Checking health..."
+    sudo docker ps --filter "name=grafana"
+fi
+
+# Prometheus setup
+PROMETHEUS_CONFIG="prometheus.yml"
+PROMETHEUS_PORT=9090
+echo "Setting up Prometheus..."
+if [ ! -f $PROMETHEUS_CONFIG ]; then
+    echo "Creating Prometheus configuration file..."
+    cat <<EOF > $PROMETHEUS_CONFIG
+global:
+  scrape_interval: 5s
+
+scrape_configs:
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:$PROMETHEUS_PORT']
+
+  - job_name: 'cadvisor'
+    static_configs:
+      - targets: ['localhost:9323']
+EOF
+    echo "Prometheus configuration created at $PROMETHEUS_CONFIG."
+else
+    echo "Prometheus configuration already exists."
+fi
+
+# Deploy Prometheus
+if [ ! "$(sudo docker ps -q -f name=prometheus)" ]; then
+    echo "Deploying Prometheus container..."
+    sudo docker run -d --name prometheus -p $PROMETHEUS_PORT:9090 -v $(pwd)/$PROMETHEUS_CONFIG:/etc/prometheus/prometheus.yml prom/prometheus
+else
+    echo "Prometheus container is already running."
+fi
+
+# cAdvisor setup
+CADVISOR_PORT=9323
+echo "Setting up cAdvisor..."
+if [ ! "$(sudo docker ps -q -f name=cadvisor)" ]; then
+    echo "Deploying cAdvisor container..."
+    sudo docker run -d --name=cadvisor -p $CADVISOR_PORT:8282 --volume=/:/rootfs:ro --volume=/var/run:/var/run:ro --volume=/sys:/sys:ro --volume=/var/lib/docker/:/var/lib/docker:ro gcr.io/cadvisor/cadvisor
+else
+    echo "cAdvisor container is already running."
+fi
+
 # Summary
 echo "Installation completed for:
 - Wazuh
 - DFIR IRIS
 - Shuffle
-- MISP"
+- MISP
+- Grafana"
 
 # Tips
 echo "Ensure all services are running properly. Use 'docker ps' to check containers or refer to individual documentation for further configurations."

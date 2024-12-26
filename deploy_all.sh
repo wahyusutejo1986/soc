@@ -43,9 +43,9 @@ deploy_wazuh() {
 # Deploy DFIR IRIS
 deploy_iris() {
     log "Deploying DFIR IRIS..."
-    if [ ! -d "$SOC_DIR/modules/dfir-iris" ]; then
-        sudo git clone $IRIS_REPO "$SOC_DIR/modules/dfir-iris"
-        cd "$SOC_DIR/modules/dfir-iris"
+    if [ ! -d "$SOC_DIR/modules/iris-web" ]; then
+        sudo git clone $IRIS_REPO "$SOC_DIR/modules/"
+        cd "$SOC_DIR/modules/iris-web"
         sudo git checkout $IRIS_VERSION
     fi
     ensure_network
