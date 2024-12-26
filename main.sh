@@ -3,7 +3,7 @@
 set -e  # Exit on any error
 
 # Load configuration
-CONFIG_FILE="config/socarium.cfg"
+CONFIG_FILE="config/config.cfg"
 if [ -f "$CONFIG_FILE" ]; then
     source "$CONFIG_FILE"
 else
@@ -18,13 +18,9 @@ log() {
 
 # Functions for deploying services
 deploy_all() {
-    log "Deploying all core services..."
-    deploy_wazuh
-    deploy_iris
-    deploy_shuffle
-    deploy_misp
-    deploy_grafana
-    log "All core services deployed successfully."
+    log "Calling deploy_all.sh to deploy all core services..."
+    sudo bash deploy_all.sh || { log "Failed to execute deploy_all.sh. Exiting."; exit 1; }
+    log "All core services deployed successfully via deploy_all.sh."
 }
 
 deploy_wazuh() {
@@ -37,6 +33,7 @@ deploy_wazuh() {
 deploy_iris() {
     log "Deploying DFIR IRIS..."
     cd "$SOC_DIR/modules/dfir-iris"
+    
     sudo docker-compose up -d || { log "Failed to deploy DFIR IRIS."; }
     log "DFIR IRIS deployed successfully."
 }
@@ -78,7 +75,8 @@ deploy_opencti() {
 
 # Dropdown Menu
 while true; do
-    CHOICE=$(whiptail --title "Socarium Deployment Menu" --menu "Choose an option:" 20 78 11 \
+    CHOICE=$(whiptail --title "Socarium Deployment Menu" --menu "Choose an option:" 20 78 12 \
+        "0" "Install Prerequisites" \
         "1" "Deploy All Core Services" \
         "2" "Deploy Wazuh" \
         "3" "Deploy DFIR IRIS" \
@@ -90,6 +88,7 @@ while true; do
         "9" "Exit" 3>&1 1>&2 2>&3)
 
     case $CHOICE in
+        0) log "Installing prerequisites..."; bash install_prerequisites.sh ;;
         1) deploy_all ;;
         2) deploy_wazuh ;;
         3) deploy_iris ;;
