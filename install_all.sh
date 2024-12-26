@@ -80,14 +80,14 @@ if [ ! -d "wazuh-docker" ]; then
     fi
 
     # Add socarium-network to docker-compose.yml
-    sudo cp /opt/soc/modules/wazuh/docker-compose.yml docker-compose.yml 
+    sudo cp /opt/soc/modules/wazuh/docker-compose.yml docker-compose.yml
     # Check and handle SSL certificates folder
     echo "Checking and preparing SSL certificates..."
     if [ -d "config/wazuh_indexer_ssl_certs" ]; then
         echo "Removing existing SSL certificates folder..."
         sudo rm -rf config/wazuh_indexer_ssl_certs
     fi
-    
+
     echo "Running certificate creation script..."
     sudo docker-compose -f generate-indexer-certs.yml run --rm generator
 
@@ -97,13 +97,16 @@ if [ ! -d "wazuh-docker" ]; then
 else
     echo "Wazuh already installed."
     #ensure_container_health "wazuh" "wazuh-docker/single-node/docker-compose.yml"
+    sudo docker ps --filter "name=wazuh"
 fi
 
 # DFIR IRIS installation
 echo "Installing DFIR IRIS..."
 if [ ! -d "iris-web" ]; then
-    git clone https://github.com/dfir-iris/iris-web.git -b v2.4.19
+    sudo git clone https://github.com/dfir-iris/iris-web.git
     cd iris-web
+    # switch to stable version v2.4.19
+    sudo git checkout v2.4.19
 
     # Create the socarium-network if it doesn't exist
     echo "Ensuring socarium-network exists..."
@@ -115,26 +118,40 @@ if [ ! -d "iris-web" ]; then
     fi
     # Rename env.model to .env
     sudo cp /opt/soc/modules/iris-web/.env.model .env
-    sudo cp /opt/soc/modules/iris-web/docker-compose.yml docker-compose.yml 
+    sudo cp /opt/soc/modules/iris-web/docker-compose.yml docker-compose.yml
     sudo cp /opt/soc/modules/iris-web/docker-compose.base.yml docker-compose.base.yml
     sudo cp /opt/soc/modules/iris-web/docker-compose.dev.yml docker-compose.dev.yml
-    sudo docker-compose build
+    sudo docker-compose pull
     sudo docker-compose up -d
     cd "$SOC_DIR"
 else
     echo "DFIR IRIS already installed. Checking health..."
     #ensure_container_health "dfir-iris" "iris-web/docker-compose.yml"
+    sudo docker ps --filter "name=irisweb"
 fi
 
 # Shuffle installation
 echo "Installing Shuffle..."
 if [ ! -d "Shuffle" ]; then
-    git clone https://github.com/Shuffle/Shuffle.git -b v1.4.2
+    sudo git clone https://github.com/Shuffle/Shuffle.git
     cd Shuffle
+    # switch to stable version v1.4.2
+    sudo git checkout v1.4.2
+    #check if directory shuffle-database exist
     if [ ! -d "shuffle-database" ]; then
+        #create directory shuffle-database if not exist
         mkdir shuffle-database
     fi
-    sudo useradd opensearch
+
+    # Check if the user 'opensearch' exists
+    if id "opensearch" &>/dev/null; then
+        echo "User 'opensearch' already exists. Skipping creation."
+    else
+        echo "User 'opensearch' does not exist. Creating it now..."
+        sudo useradd -m -s /bin/bash opensearch
+        echo "User 'opensearch' created successfully."
+    fi
+
     sudo chown -R 1000:1000 shuffle-database
     sudo swapoff -a
     sudo sysctl -w vm.max_map_count=262144
@@ -153,31 +170,31 @@ if [ ! -d "Shuffle" ]; then
 else
     echo "Shuffle already installed. Checking health..."
     #ensure_container_health "shuffle" "Shuffle/docker-compose.yml"
+    sudo docker ps --filter "name=shuffle"
 fi
 
 # MISP installation
 echo "Installing MISP..."
-if [ ! -d "misp" ]; then
-    git clone https://github.com/MISP/misp-docker.git
+if [ ! -d "misp-docker" ]; then
+    # clone official misp repository latest version
+    sudo git clone https://github.com/MISP/misp-docker.git
+    #change directory to misp-docker after clone success
     cd misp-docker
-
-    # Create the socarium-network if it doesn't exist
-    echo "Ensuring socarium-network exists..."
-    if ! sudo docker network ls | grep "socarium-network"; then
-        echo "Creating external network: socarium-network"
-        sudo docker network create socarium-network
-    else
-        echo "Network socarium-network already exists."
-    fi
-
-    sudo cp /opt/soc/modules/misp/template.env .env
-    sudo cp /opt/soc/modules/misp/docker-compose.yml docker-compose.yml
+    #copy template.env to .env
+    cp template.env .env
+    #add value for variable BASE_URL=https://localhost:10443/
+    sudo sed -i 's/^BASE_URL=.*/BASE_URL=https:\/\/localhost:10443/' .env
+    #prevent port conflict with other platform to 8080 for http and 10443 for https
+    sudo sed -i 's/- "80:80"/- "8080:80"/g; s/- "443:443"/- "10443:443"/g' docker-compose.yml
+    #pull image for faster deployment instead of build
     sudo docker-compose pull
+    #running the containers
     sudo docker compose up -d
     cd "$SOC_DIR"
 else
     echo "MISP already installed. Checking health..."
     #ensure_container_health "misp" "misp/docker-compose.yml"
+    sudo docker ps --filter "name=misp"
 fi
 
 # Summary
