@@ -84,12 +84,7 @@ deploy_misp() {
 # Deploy Grafana
 deploy_grafana() {
     log "Deploying Grafana..."
-    if [ ! -d "$SOC_DIR/modules/grafana" ]; then
-        sudo git clone $GRAFANA_REPO "$SOC_DIR/modules/grafana"
-    fi
-    cd "$SOC_DIR/modules/grafana"
-    ensure_network
-    sudo docker-compose up -d
+    sudo docker run -d -p 3000:3000 --name=grafana grafana/grafana-oss || { log "Failed to deploy Grafana. Exiting."; exit 1; }
     log "Grafana deployed successfully."
 }
 
