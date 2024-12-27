@@ -32,7 +32,7 @@ services:
         soft: 65536
         hard: 65536
     healthcheck:
-      test: curl -s http://elasticsearch:9200 >/dev/null || exit 1
+      test: curl -s http://elasticsearch:9205 >/dev/null || exit 1
       interval: 30s
       timeout: 10s
       retries: 50
@@ -70,7 +70,7 @@ services:
     image: opencti/platform:6.4.4
     environment:
       - NODE_OPTIONS=--max-old-space-size=8096
-      - APP__PORT=8080
+      - APP__PORT=8282
       - APP__BASE_URL=${OPENCTI_BASE_URL}
       - APP__ADMIN__EMAIL=${OPENCTI_ADMIN_EMAIL}
       - APP__ADMIN__PASSWORD=${OPENCTI_ADMIN_PASSWORD}
@@ -78,7 +78,7 @@ services:
       - APP__APP_LOGS__LOGS_LEVEL=error
       - REDIS__HOSTNAME=redis
       - REDIS__PORT=6379
-      - ELASTICSEARCH__URL=http://elasticsearch:9200
+      - ELASTICSEARCH__URL=http://elasticsearch:9205
       - ELASTICSEARCH__NUMBER_OF_REPLICAS=0
       - MINIO__ENDPOINT=minio
       - MINIO__PORT=9000
@@ -96,7 +96,7 @@ services:
       - PROVIDERS__LOCAL__STRATEGY=LocalStrategy
       - APP__HEALTH_ACCESS_KEY=${OPENCTI_HEALTHCHECK_ACCESS_KEY}
     ports:
-      - "8080:8080"
+      - "8282:8282"
     depends_on:
       redis:
         condition: service_healthy
@@ -108,14 +108,14 @@ services:
         condition: service_healthy
     restart: always
     healthcheck:
-      test:  ["CMD", "wget", "-qO-", "http://opencti:8080/health?health_access_key=${OPENCTI_HEALTHCHECK_ACCESS_KEY}"]
+      test:  ["CMD", "wget", "-qO-", "http://opencti:8282/health?health_access_key=${OPENCTI_HEALTHCHECK_ACCESS_KEY}"]
       interval: 10s
       timeout: 5s
       retries: 20
   worker:
     image: opencti/worker:6.4.4
     environment:
-      - OPENCTI_URL=http://opencti:8080
+      - OPENCTI_URL=http://opencti:8282
       - OPENCTI_TOKEN=${OPENCTI_ADMIN_TOKEN}
       - WORKER_LOG_LEVEL=info
     depends_on:
@@ -128,7 +128,7 @@ services:
   connector-export-file-stix:
     image: opencti/connector-export-file-stix:6.4.4
     environment:
-      - OPENCTI_URL=http://opencti:8080
+      - OPENCTI_URL=http://opencti:8282
       - OPENCTI_TOKEN=${OPENCTI_ADMIN_TOKEN}
       - CONNECTOR_ID=${CONNECTOR_EXPORT_FILE_STIX_ID} # Valid UUIDv4
       - CONNECTOR_TYPE=INTERNAL_EXPORT_FILE
@@ -142,7 +142,7 @@ services:
   connector-export-file-csv:
     image: opencti/connector-export-file-csv:6.4.4
     environment:
-      - OPENCTI_URL=http://opencti:8080
+      - OPENCTI_URL=http://opencti:8282
       - OPENCTI_TOKEN=${OPENCTI_ADMIN_TOKEN}
       - CONNECTOR_ID=${CONNECTOR_EXPORT_FILE_CSV_ID} # Valid UUIDv4
       - CONNECTOR_TYPE=INTERNAL_EXPORT_FILE
@@ -156,7 +156,7 @@ services:
   connector-export-file-txt:
     image: opencti/connector-export-file-txt:6.4.4
     environment:
-      - OPENCTI_URL=http://opencti:8080
+      - OPENCTI_URL=http://opencti:8282
       - OPENCTI_TOKEN=${OPENCTI_ADMIN_TOKEN}
       - CONNECTOR_ID=${CONNECTOR_EXPORT_FILE_TXT_ID} # Valid UUIDv4
       - CONNECTOR_TYPE=INTERNAL_EXPORT_FILE
@@ -170,7 +170,7 @@ services:
   connector-import-file-stix:
     image: opencti/connector-import-file-stix:6.4.4
     environment:
-      - OPENCTI_URL=http://opencti:8080
+      - OPENCTI_URL=http://opencti:8282
       - OPENCTI_TOKEN=${OPENCTI_ADMIN_TOKEN}
       - CONNECTOR_ID=${CONNECTOR_IMPORT_FILE_STIX_ID} # Valid UUIDv4
       - CONNECTOR_TYPE=INTERNAL_IMPORT_FILE
@@ -186,7 +186,7 @@ services:
   connector-import-document:
     image: opencti/connector-import-document:6.4.4
     environment:
-      - OPENCTI_URL=http://opencti:8080
+      - OPENCTI_URL=http://opencti:8282
       - OPENCTI_TOKEN=${OPENCTI_ADMIN_TOKEN}
       - CONNECTOR_ID=${CONNECTOR_IMPORT_DOCUMENT_ID} # Valid UUIDv4
       - CONNECTOR_TYPE=INTERNAL_IMPORT_FILE
@@ -205,7 +205,7 @@ services:
   connector-analysis:
     image: opencti/connector-import-document:6.4.4
     environment:
-      - OPENCTI_URL=http://opencti:8080
+      - OPENCTI_URL=http://opencti:8282
       - OPENCTI_TOKEN=${OPENCTI_ADMIN_TOKEN}
       - CONNECTOR_ID=${CONNECTOR_ANALYSIS_ID} # Valid UUIDv4
       - CONNECTOR_TYPE=INTERNAL_ANALYSIS

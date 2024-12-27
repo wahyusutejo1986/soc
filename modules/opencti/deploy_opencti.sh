@@ -2,16 +2,14 @@
 
 # setting for elasticsearch
 sudo sysctl -w vm.max_map_count=1048575
-vm.max_map_count=1048575
-
 sudo cp .env.sample .env
 
 # add configuration to .env
-sudo (cat << EOF
+$(cat << EOF
 OPENCTI_ADMIN_EMAIL=admin@opencti.io
 OPENCTI_ADMIN_PASSWORD=ChangeMePlease
 OPENCTI_ADMIN_TOKEN=$(cat /proc/sys/kernel/random/uuid)
-OPENCTI_BASE_URL=http://localhost:8080
+OPENCTI_BASE_URL=http://localhost:8282
 MINIO_ROOT_USER=$(cat /proc/sys/kernel/random/uuid)
 MINIO_ROOT_PASSWORD=$(cat /proc/sys/kernel/random/uuid)
 RABBITMQ_DEFAULT_USER=guest
@@ -28,4 +26,4 @@ EOF
 ) > .env
 
 # running openCTI Container
-docker-compose up -d
+sudo docker-compose up -d
