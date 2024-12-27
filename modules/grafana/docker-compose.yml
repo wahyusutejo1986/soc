@@ -6,15 +6,14 @@ networks:
 
 services:
   grafana:
-    image: grafana/grafana-oss:11.4.0-ubuntu
+    image: grafana/grafana-oss:latest
     container_name: grafana
     ports:
       - "3000:3000"
     volumes:
       - grafana-storage:/var/lib/grafana
     networks:
-      socarium-network:
-        ipv4_address: 172.18.0.101
+      - socarium-network
 
   prometheus:
     image: prom/prometheus:latest
@@ -22,10 +21,9 @@ services:
     ports:
       - "9090:9090"
     volumes:
-      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+      - ./modules/grafana/prometheus.yml:/etc/prometheus/prometheus.yml
     networks:
-      socarium-network:
-        ipv4_address: 172.18.0.102
+      - socarium-network
 
   cadvisor:
     image: gcr.io/cadvisor/cadvisor:latest
@@ -38,8 +36,7 @@ services:
       - /sys:/sys:ro
       - /var/lib/docker/:/var/lib/docker:ro
     networks:
-      socarium-network:
-        ipv4_address: 172.18.0.103
+      - socarium-network
 
 volumes:
   grafana-storage:

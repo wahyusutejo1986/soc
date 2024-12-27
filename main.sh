@@ -33,7 +33,7 @@ deploy_wazuh() {
 deploy_iris() {
     log "Deploying DFIR IRIS..."
     cd "$SOC_DIR/modules/dfir-iris"
-    
+
     sudo docker-compose up -d || { log "Failed to deploy DFIR IRIS."; }
     log "DFIR IRIS deployed successfully."
 }
@@ -70,6 +70,8 @@ deploy_opencti() {
     log "Deploying OpenCTI..."
     cd "$SOC_DIR/modules/opencti"
     # Add OpenCTI-specific deployment steps here
+    sudo chmod +x deploy_opencti.sh
+    sudo ./deploy_opencti.sh
     log "OpenCTI deployed successfully."
 }
 
