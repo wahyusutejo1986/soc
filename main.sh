@@ -63,6 +63,7 @@ deploy_yara() {
     log "Deploying Yara..."
     cd "$SOC_DIR/modules/yara"
     # Add Yara-specific deployment steps here
+    sudo apt install yara -y
     log "Yara deployed successfully."
 }
 

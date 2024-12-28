@@ -1,6 +1,17 @@
 #!/bin/bash
 
 set -e  # Exit on error
+
+# Load configuration
+CONFIG_FILE="./config/config.cfg"
+if [ -f "$CONFIG_FILE" ]; then
+    source "$CONFIG_FILE"
+else
+    echo "Configuration file $CONFIG_FILE not found! Exiting."
+    exit 1
+fi
+
+
 BASE_DIR=$(pwd)
 
 # Function to check if a command exists
@@ -183,8 +194,8 @@ if [ ! -d "misp-docker" ]; then
     cd misp-docker
     #copy template.env to .env
     cp template.env .env
-    #add value for variable BASE_URL=https://localhost:10443/
-    sudo sed -i 's/^BASE_URL=.*/BASE_URL=https:\/\/103.82.92.195:10443/' .env
+    #add value for variable BASE_URL=https://localhost:10443/    
+    sudo sed -i 's/^BASE_URL=.*/BASE_URL=https:\/\/'"$MISP_REDIRECT_URL:$MISP_HTTPS_PORT"'/' .env
     #prevent port conflict with other platform to 8181 for http and 10443 for https
     sudo sed -i 's/- "80:80"/- "8181:80"/g; s/- "443:443"/- "10443:443"/g' docker-compose.yml
     #pull image for faster deployment instead of build
