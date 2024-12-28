@@ -11,7 +11,7 @@ else
     exit 1
 fi
 
-
+# get directory where this script install_all.sh executed
 BASE_DIR=$(pwd)
 
 # Function to check if a command exists
@@ -209,27 +209,12 @@ else
     sudo docker ps --filter "name=misp"
 fi
 
-# Grafana installation
-
-echo "Installing Grafana..."
-if [ ! -d "grafana" ]; then
-    #echo "Setting up Grafana container..."
-    #sudo docker volume create grafana-storage
-    #sudo docker run -d -p 3000:3000 --name grafana --volume grafana-storage grafana/grafana-oss:11.4.0-ubuntu    
-    cd $BASE_DIR/modules/grafana/
-    sudo docker-compose up -d
-else
-    echo "Grafana already installed. Checking health..."
-    sudo docker ps --filter "name=grafana"
-fi
-
 # Summary
 echo "Installation completed for:
 - Wazuh
 - DFIR IRIS
 - Shuffle
-- MISP
-- Grafana"
+- MISP"
 
 # Tips
 echo "Ensure all services are running properly. Use 'docker ps' to check containers or refer to individual documentation for further configurations."
