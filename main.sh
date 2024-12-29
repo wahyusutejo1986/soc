@@ -28,9 +28,9 @@ fi
 
 # Functions for deploying services
 deploy_all() {
-    log "Calling deploy_all.sh to deploy all core services..."
-    sudo bash install_all.sh || { log "Failed to execute deploy_all.sh. Exiting."; exit 1; }
-    log "All core services deployed successfully via deploy_all.sh."
+    log "Calling install_all.sh to deploy all core services..."
+    sudo ./install_all.sh || { log "Failed to execute install_all.sh. Exiting."; exit 1; }
+    log "All core services deployed successfully via install_all.sh."
 }
 
 deploy_wazuh() {
@@ -88,7 +88,7 @@ deploy_opencti() {
 
 # Dropdown Menu
 while true; do
-    CHOICE=$(whiptail --title "Socarium Deployment Menu" --menu "Choose an option:" 20 78 12 \
+    CHOICE=$(whiptail --title "Socarium SOC Packages Deployment Menu" --menu "Choose an option:" 20 78 12 \
         "0" "Install Prerequisites" \
         "1" "Deploy All Core Services" \
         "2" "Deploy Wazuh" \
