@@ -31,59 +31,70 @@ deploy_all() {
     log "Calling install_all.sh to deploy all core services..."
     sudo ./install_all.sh || { log "Failed to execute install_all.sh. Exiting."; exit 1; }
     log "All core services deployed successfully via install_all.sh."
+    cd $BASE_DIR
 }
 
 deploy_wazuh() {
     log "Deploying Wazuh..."
-    cd "$SOC_DIR/modules/wazuh"
-    sudo docker-compose up -d || { log "Failed to deploy Wazuh."; }
+    cd "$BASE_DIR/modules/wazuh"
+    sudo chmod +x wazuh.sh
+    sudo ./wazuh.sh
     log "Wazuh deployed successfully."
+    cd $BASE_DIR
 }
 
 deploy_iris() {
     log "Deploying DFIR IRIS..."
-    cd "$SOC_DIR/modules/dfir-iris"
-
-    sudo docker-compose up -d || { log "Failed to deploy DFIR IRIS."; }
+    cd "$BASE_DIR/modules/dfir-iris"
+    sudo chmod +x dfir-iris.sh
+    sudo ./dfir-iris.sh
     log "DFIR IRIS deployed successfully."
+    cd $BASE_DIR
 }
 
 deploy_shuffle() {
     log "Deploying Shuffle..."
-    cd "$SOC_DIR/modules/shuffle"
-    sudo docker-compose up -d || { log "Failed to deploy Shuffle."; }
+    cd "$BASE_DIR/modules/shuffle"
+    sudo chmod +x shuffle.sh
+    sudo ./shuffle.sh
     log "Shuffle deployed successfully."
+    cd $BASE_DIR
 }
 
 deploy_misp() {
     log "Deploying MISP..."
-    cd "$SOC_DIR/modules/misp"
-    sudo docker-compose up -d || { log "Failed to deploy MISP."; }
+    cd "$BASE_DIR/modules/misp"
+    sudo chmod +x misp.sh
+    sudo ./misp.sh
     log "MISP deployed successfully."
+    cd $BASE_DIR
 }
 
 deploy_grafana() {
     log "Deploying Grafana and Prometheus..."
-    cd "$SOC_DIR/modules/grafana"
+    cd "$BASE_DIR/modules/grafana"
     sudo docker-compose up -d || { log "Failed to deploy Grafana and Prometheus."; }
     log "Grafana and Prometheus deployed successfully."
+    cd $BASE_DIR
 }
 
 deploy_yara() {
     log "Deploying Yara..."
-    cd "$SOC_DIR/modules/yara"
+    cd "$BASE_DIR/modules/yara"
     # Add Yara-specific deployment steps here
     sudo apt install yara -y
     log "Yara deployed successfully."
+    cd $BASE_DIR
 }
 
 deploy_opencti() {
     log "Deploying OpenCTI..."
-    cd "$SOC_DIR/modules/opencti"
+    cd "$BASE_DIR/modules/opencti"
     # Add OpenCTI-specific deployment steps here
     sudo chmod +x deploy_opencti.sh
     sudo ./deploy_opencti.sh
     log "OpenCTI deployed successfully."
+    cd $BASE_DIR
 }
 
 # Dropdown Menu
