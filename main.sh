@@ -16,6 +16,17 @@ log() {
     echo "$(date '+%Y-%m-%d %H:%M:%S') - $1"
 }
 
+# Check if /tmp/socarium exists
+if [ -d "/tmp/socarium" ]; then
+    echo "/tmp/socarium exists. Skipping directory creation..."
+else
+    echo "/tmp/socarium does not exist. Creating directory..."
+    mkdir -p /tmp/socarium
+fi
+
+# Continue with the installation
+echo "Continuing with the installation..."
+
 # Copy modules directory to /tmp/socarium if it doesn't already exist
 MODULES_SRC="modules"
 MODULES_DEST="$SOC_DIR/modules"
@@ -112,7 +123,7 @@ while true; do
         "9" "Exit" 3>&1 1>&2 2>&3)
 
     case $CHOICE in
-        0) log "Installing prerequisites..."; bash install_prerequisites.sh ;;
+        0) log "Installing prerequisites..."; sudo ./install_prerequisites.sh ;;
         1) deploy_all ;;
         2) deploy_wazuh ;;
         3) deploy_iris ;;
