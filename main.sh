@@ -29,7 +29,7 @@ fi
 # Functions for deploying services
 deploy_all() {
     log "Calling deploy_all.sh to deploy all core services..."
-    sudo bash deploy_all.sh || { log "Failed to execute deploy_all.sh. Exiting."; exit 1; }
+    sudo bash install_all.sh || { log "Failed to execute deploy_all.sh. Exiting."; exit 1; }
     log "All core services deployed successfully via deploy_all.sh."
 }
 
