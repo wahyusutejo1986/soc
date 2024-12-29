@@ -43,21 +43,21 @@ ensure_container_health() {
     fi
 }
 
-# Create /opt/soc directory if it doesn't exist
-SOC_DIR="/opt/soc"
+# Create /tmp/socarium directory if it doesn't exist
+SOC_DIR="/tmp/socarium"
 if [ ! -d "$SOC_DIR" ]; then
     echo "Creating directory $SOC_DIR..."
-    sudo mkdir -p "$SOC_DIR"
+    mkdir -p "$SOC_DIR"
 else
     echo "Directory $SOC_DIR already exists."
 fi
 
-# Copy modules directory to /opt/soc if it doesn't already exist
+# Copy modules directory to /tmp/socarium if it doesn't already exist
 MODULES_SRC="modules"
 MODULES_DEST="$SOC_DIR/modules"
 if [ ! -d "$MODULES_DEST" ]; then
     echo "Copying modules to $SOC_DIR..."
-    sudo cp -r "$MODULES_SRC" "$MODULES_DEST"
+    cp -r "$MODULES_SRC" "$MODULES_DEST"
 else
     echo "Modules directory already exists in $SOC_DIR. Skipping copy."
 fi
@@ -76,8 +76,8 @@ cd "$SOC_DIR"
 echo "Installing Wazuh..."
 if [ ! -d "wazuh-docker" ]; then
     echo "Cloning Wazuh Docker repository..."
-    sudo git clone https://github.com/wazuh/wazuh-docker.git -b v4.9.2
-    cd /opt/soc/wazuh-docker/single-node/
+    git clone https://github.com/wazuh/wazuh-docker.git -b v4.9.2
+    cd $SOC_DIR/wazuh-docker/single-node/
 
     echo "Setting max_map_count..."
     sudo sysctl -w vm.max_map_count=262144
@@ -92,12 +92,12 @@ if [ ! -d "wazuh-docker" ]; then
     fi
 
     # Add socarium-network to docker-compose.yml
-    sudo cp /opt/soc/modules/wazuh/docker-compose.yml docker-compose.yml
+    cp $SOC_DIR/modules/wazuh/docker-compose.yml docker-compose.yml
     # Check and handle SSL certificates folder
     echo "Checking and preparing SSL certificates..."
     if [ -d "config/wazuh_indexer_ssl_certs" ]; then
         echo "Removing existing SSL certificates folder..."
-        sudo rm -rf config/wazuh_indexer_ssl_certs
+        rm -rf config/wazuh_indexer_ssl_certs
     fi
 
     echo "Running certificate creation script..."
@@ -115,10 +115,10 @@ fi
 # DFIR IRIS installation
 echo "Installing DFIR IRIS..."
 if [ ! -d "iris-web" ]; then
-    sudo git clone https://github.com/dfir-iris/iris-web.git
+    git clone https://github.com/dfir-iris/iris-web.git
     cd iris-web
     # switch to stable version v2.4.19
-    sudo git checkout v2.4.19
+    git checkout v2.4.19
 
     # Create the socarium-network if it doesn't exist
     echo "Ensuring socarium-network exists..."
@@ -129,10 +129,10 @@ if [ ! -d "iris-web" ]; then
         echo "Network socarium-network already exists."
     fi
     # Rename env.model to .env
-    sudo cp /opt/soc/modules/iris-web/.env.model .env
-    sudo cp /opt/soc/modules/iris-web/docker-compose.yml docker-compose.yml
-    sudo cp /opt/soc/modules/iris-web/docker-compose.base.yml docker-compose.base.yml
-    sudo cp /opt/soc/modules/iris-web/docker-compose.dev.yml docker-compose.dev.yml
+    cp $SOC_DIR/modules/iris-web/.env.model .env
+    cp $SOC_DIR/modules/iris-web/docker-compose.yml docker-compose.yml
+    cp $SOC_DIR/modules/iris-web/docker-compose.base.yml docker-compose.base.yml
+    cp $SOC_DIR/modules/iris-web/docker-compose.dev.yml docker-compose.dev.yml
     sudo docker-compose build
     sudo docker-compose up -d
     cd "$SOC_DIR"
@@ -145,10 +145,10 @@ fi
 # Shuffle installation
 echo "Installing Shuffle..."
 if [ ! -d "Shuffle" ]; then
-    sudo git clone https://github.com/Shuffle/Shuffle.git
+    git clone https://github.com/Shuffle/Shuffle.git
     cd Shuffle
     # switch to stable version v1.4.2
-    sudo git checkout v1.4.2
+    git checkout v1.4.2
     #check if directory shuffle-database exist
     if [ ! -d "shuffle-database" ]; then
         #create directory shuffle-database if not exist
@@ -176,7 +176,7 @@ if [ ! -d "Shuffle" ]; then
     else
         echo "Network socarium-network already exists."
     fi
-    sudo cp /opt/soc/modules/shuffle/docker-compose.yml docker-compose.yml
+    cp $SOC_DIR/modules/shuffle/docker-compose.yml docker-compose.yml
     sudo docker compose up -d
     cd "$SOC_DIR"
 else
@@ -189,15 +189,15 @@ fi
 echo "Installing MISP..."
 if [ ! -d "misp-docker" ]; then
     # clone official misp repository latest version
-    sudo git clone https://github.com/MISP/misp-docker.git
+    git clone https://github.com/MISP/misp-docker.git
     #change directory to misp-docker after clone success
     cd misp-docker
     #copy template.env to .env
     cp template.env .env
     #add value for variable BASE_URL=https://localhost:10443/    
-    sudo sed -i 's/^BASE_URL=.*/BASE_URL=https:\/\/'"$MISP_REDIRECT_URL:$MISP_HTTPS_PORT"'/' .env
+    sed -i 's/^BASE_URL=.*/BASE_URL=https:\/\/'"$MISP_REDIRECT_URL:$MISP_HTTPS_PORT"'/' .env
     #prevent port conflict with other platform to 8181 for http and 10443 for https
-    sudo sed -i 's/- "80:80"/- "8181:80"/g; s/- "443:443"/- "10443:443"/g' docker-compose.yml
+    sed -i 's/- "80:80"/- "8181:80"/g; s/- "443:443"/- "10443:443"/g' docker-compose.yml
     #pull image for faster deployment instead of build
     sudo docker-compose pull
     #running the containers
