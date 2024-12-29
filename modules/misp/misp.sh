@@ -2,17 +2,17 @@
 
 set -e  # Exit on error
 
+# get directory where this script install_all.sh executed
+BASE_DIR=$(pwd)
+
 # Load configuration
-CONFIG_FILE="./config/config.cfg"
+CONFIG_FILE="config/config.cfg"
 if [ -f "$CONFIG_FILE" ]; then
     source "$CONFIG_FILE"
 else
     echo "Configuration file $CONFIG_FILE not found! Exiting."
     exit 1
 fi
-
-# get directory where this script install_all.sh executed
-BASE_DIR=$(pwd)
 
 # Create /tmp/socarium directory if it doesn't exist
 SOC_DIR="/tmp/socarium"

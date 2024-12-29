@@ -2,6 +2,15 @@
 
 # setting for elasticsearch
 sudo sysctl -w vm.max_map_count=1048575
+
+# Check and create Docker network socarium-network if it doesn't exist
+if sudo docker network ls | grep "socarium-network"; then
+    echo "Docker network 'socarium-network' already exists. Skipping creation."
+else
+    echo "Creating Docker network 'socarium-network'..."
+    sudo docker network create socarium-network
+fi
+
 sudo cp .env.sample .env
 
 # Append configuration to .env
