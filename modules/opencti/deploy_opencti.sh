@@ -9,7 +9,7 @@ cat << EOF | sudo tee -a .env
 OPENCTI_ADMIN_EMAIL=admin@opencti.io
 OPENCTI_ADMIN_PASSWORD=ChangeMePlease
 OPENCTI_ADMIN_TOKEN=$(cat /proc/sys/kernel/random/uuid)
-OPENCTI_BASE_URL=http://localhost:8282
+OPENCTI_BASE_URL=http://103.82.92.195:8282
 MINIO_ROOT_USER=$(cat /proc/sys/kernel/random/uuid)
 MINIO_ROOT_PASSWORD=$(cat /proc/sys/kernel/random/uuid)
 RABBITMQ_DEFAULT_USER=guest

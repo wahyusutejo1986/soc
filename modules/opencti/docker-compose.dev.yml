@@ -22,8 +22,8 @@ services:
         soft: 65536
         hard: 65536
     ports:
-      - "9205:9205"
-      - "9305:9305"
+      - "9205:9200"
+      - "9305:9300"
   opencti-dev-kibana:
     container_name: opencti-dev-kibana
     image: docker.elastic.co/kibana/kibana:8.16.1

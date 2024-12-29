@@ -89,4 +89,5 @@ sudo docker exec -it "$MISP_CONTAINER_NAME" bash -c "openssl req -x509 -nodes -d
 
 # Restart MISP Docker environment
 cd /tmp/socarium/misp-docker || exit
+docker-compose down -v
 sudo docker-compose restart

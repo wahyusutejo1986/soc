@@ -16,6 +16,9 @@ services:
     image: docker.elastic.co/elasticsearch/elasticsearch:8.15.3
     volumes:
       - esdata:/usr/share/elasticsearch/data
+    ports:
+      - "9205"
+      - "9305"
     environment:
       - discovery.type=single-node
       - xpack.ml.enabled=false
@@ -241,7 +244,7 @@ services:
       - CONNECTOR_SCOPE=misp
       - CONNECTOR_LOG_LEVEL=error
       - CONNECTOR_EXPOSE_METRICS=false
-      - MISP_URL=http://103.82.92.195:8181 # Required
+      - MISP_URL=https://103.82.92.195:10443 # Required
       - MISP_REFERENCE_URL= # Optional, will be used to create external reference to MISP event (default is "url")
       - MISP_KEY=ChangeMe # Required
       - MISP_SSL_VERIFY=false # Required
