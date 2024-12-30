@@ -3,8 +3,11 @@
 set -e  # Exit on error
 
 # Load configuration
-CONFIG_FILE="./config/config.cfg"
-if [ -f "$CONFIG_FILE" ]; then
+script_dir=$(cd "$(dirname "$0")" && pwd)
+parent_dir=$(dirname "$script_dir")
+grandparent_dir=$(dirname "$parent_dir")
+CONFIG_FILE="${grandparent_dir}/config/config.cfg"
+if [[ -f "$CONFIG_FILE" ]]; then
     source "$CONFIG_FILE"
 else
     echo "Configuration file $CONFIG_FILE not found! Exiting."
