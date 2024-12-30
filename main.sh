@@ -56,7 +56,7 @@ deploy_wazuh() {
 
 deploy_iris() {
     log "Deploying DFIR IRIS..."
-    cd "$BASE_DIR/modules/dfir-iris"
+    cd "$BASE_DIR/modules/iris-web"
     sudo chmod +x dfir-iris.sh
     sudo ./dfir-iris.sh
     log "DFIR IRIS deployed successfully."
