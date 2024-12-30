@@ -3,11 +3,14 @@
 set -e  # Exit on error
 
 # get directory where this script install_all.sh executed
-BASE_DIR=$(pwd)
+# BASE_DIR=$(pwd)
 
 # Load configuration
-CONFIG_FILE="config/config.cfg"
-if [ -f "$CONFIG_FILE" ]; then
+script_dir=$(cd "$(dirname "$0")" && pwd)
+parent_dir=$(dirname "$script_dir")
+grandparent_dir=$(dirname "$parent_dir")
+CONFIG_FILE="${grandparent_dir}/config/config.cfg"
+if [[ -f "$CONFIG_FILE" ]]; then
     source "$CONFIG_FILE"
 else
     echo "Configuration file $CONFIG_FILE not found! Exiting."
