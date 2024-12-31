@@ -50,7 +50,7 @@ if [ ! -d "misp-docker" ]; then
     #add value for variable BASE_URL=https://localhost:10443/    
     sed -i 's|^BASE_URL=.*|BASE_URL=https://'"$MISP_REDIRECT_URL:$MISP_HTTPS_PORT"'|' .env
     #prevent port conflict with other platform to 8181 for http and 10443 for https
-    sed -i 's/- "80:80"/- "8181:80"/g; s/- "443:443"/- "10443:443"/g' docker-compose.yml
+    sed -i 's|- "80:80"|- "8181:80"|g; s|- "443:443"|- "10443:443"|g' docker-compose.yml
     #pull image for faster deployment instead of build
     sudo docker-compose pull
     #running the containers
