@@ -36,12 +36,14 @@ else
     echo "Modules directory already exists in $SOC_DIR. Skipping copy."
 fi
 
+cd "$SOC_DIR"
+
 # Wazuh installation
 echo "Installing Wazuh..."
 if [ ! -d "wazuh-docker" ]; then
     echo "Cloning Wazuh Docker repository..."
     git clone https://github.com/wazuh/wazuh-docker.git -b v4.9.2
-    cd wazuh-docker/single-node/
+    cd $SOC_DIR/wazuh-docker/single-node/
 
     sysctl -w vm.max_map_count=262144
     if grep -q "vm.max_map_count" /etc/sysctl.conf; then
