@@ -36,11 +36,13 @@ else
     echo "Modules directory already exists in $SOC_DIR. Skipping copy."
 fi
 
+cd "$SOC_DIR"
+
 # DFIR IRIS installation
 echo "Installing DFIR IRIS..."
 if [ ! -d "iris-web" ]; then
     git clone https://github.com/dfir-iris/iris-web.git
-    cd iris-web
+    cd $SOC_DIR/iris-web
     # switch to stable version v2.4.19
     git checkout v2.4.19
 
