@@ -16,27 +16,6 @@ log() {
     echo "$(date '+%Y-%m-%d %H:%M:%S') - $1"
 }
 
-# Check if /tmp/socarium exists
-if [ -d "/tmp/socarium" ]; then
-    echo "/tmp/socarium exists. Skipping directory creation..."
-else
-    echo "/tmp/socarium does not exist. Creating directory..."
-    mkdir -p /tmp/socarium
-fi
-
-# Continue with the installation
-echo "Continuing with the installation..."
-
-# Copy modules directory to /tmp/socarium if it doesn't already exist
-MODULES_SRC="modules"
-MODULES_DEST="$SOC_DIR/modules"
-if [ ! -d "$MODULES_DEST" ]; then
-    echo "Copying modules to $SOC_DIR..."
-    cp -r "$MODULES_SRC" "$MODULES_DEST"
-else
-    echo "Modules directory already exists in $SOC_DIR. Skipping copy."
-fi
-
 # Functions for deploying services
 deploy_all() {
     log "Calling install_all.sh to deploy all core services..."
