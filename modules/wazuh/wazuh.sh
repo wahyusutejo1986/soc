@@ -1,63 +1,86 @@
 #!/bin/bash
 
-# Function to handle errors
-handle_error() {
-    echo "❌ $1. Exiting..."
+set -e  # Exit on error
+
+# Load configuration
+script_dir=$(cd "$(dirname "$0")" && pwd)
+parent_dir=$(dirname "$script_dir")
+grandparent_dir=$(dirname "$parent_dir")
+CONFIG_FILE="${grandparent_dir}/config/config.cfg"
+if [[ -f "$CONFIG_FILE" ]]; then
+    source "$CONFIG_FILE"
+else
+    echo "Configuration file $CONFIG_FILE not found! Exiting."
     exit 1
-}
+fi
 
-# Function to check required tools
-check_tools() {
-    command -v git >/dev/null 2>&1 || handle_error "Git is required but not installed"
-    command -v docker-compose >/dev/null 2>&1 || handle_error "Docker Compose is required but not installed"
-    command -v docker >/dev/null 2>&1 || handle_error "Docker is required but not installed"
-}
+# get directory where this script install_all.sh executed
+BASE_DIR=$(pwd)
 
-# Set vm.max_map_count temporarily
-    sudo sysctl -w vm.max_map_count=262144 || handle_error "Failed to set vm.max_map_count temporarily"
+# Create /tmp/socarium directory if it doesn't exist
+SOC_DIR="/tmp/socarium"
+if [ ! -d "$SOC_DIR" ]; then
+    echo "Creating directory $SOC_DIR..."
+    mkdir -p "$SOC_DIR"
+else
+    echo "Directory $SOC_DIR already exists."
+fi
 
-# Function to ensure vm.max_map_count is set permanently
-set_max_map_count() {
-    # Check if the setting is already in /etc/sysctl.conf
-    grep -q 'vm.max_map_count' /etc/sysctl.conf || {
-        echo "Setting vm.max_map_count permanently..."
-        # Append the setting to /etc/sysctl.conf
-        echo "vm.max_map_count=262144" | sudo tee -a /etc/sysctl.conf >/dev/null
-        # Reload sysctl to apply changes
-        sudo sysctl -p || handle_error "Failed to reload sysctl"
-    }
-}
+# Copy modules directory to /tmp/socarium if it doesn't already exist
+MODULES_SRC="modules"
+MODULES_DEST="$SOC_DIR/modules"
+if [ ! -d "$MODULES_DEST" ]; then
+    echo "Copying modules to $SOC_DIR..."
+    cp -r "$MODULES_SRC" "$MODULES_DEST"
+else
+    echo "Modules directory already exists in $SOC_DIR. Skipping copy."
+fi
 
-# Ensure vm.max_map_count is set permanently
-    set_max_map_count
+# Wazuh installation
+echo "Installing Wazuh..."
+if [ ! -d "wazuh-docker" ]; then
+    echo "Cloning Wazuh Docker repository..."
+    git clone https://github.com/wazuh/wazuh-docker.git -b v4.9.2
+    cd wazuh-docker/single-node/
 
-install_wazuh() {
-    echo "🚀 Installing Wazuh..."
+    sysctl -w vm.max_map_count=262144
+    if grep -q "vm.max_map_count" /etc/sysctl.conf; then
+        echo "Updating existing vm.max_map_count value in /etc/sysctl.conf..."
+        sed -i 's/^vm\.max_map_count=.*/vm.max_map_count=262144/' /etc/sysctl.conf
+    else
+        echo "Adding vm.max_map_count to /etc/sysctl.conf..."
+        echo "vm.max_map_count=262144" >> /etc/sysctl.conf
+    fi
 
-    # Check if necessary tools are installed
-    check_tools
+    echo "Done. Current value of vm.max_map_count is:"
+    sysctl vm.max_map_count
 
-    local BASE_DIR="/opt/socarium"
-    local WAZUH_REPO="https://github.com/wazuh/wazuh-docker.git -b v4.9.2"
+    # Create the socarium-network if it doesn't exist
+    echo "Ensuring socarium-network exists..."
+    if ! sudo docker network ls | grep "socarium-network"; then
+        echo "Creating external network: socarium-network"
+        sudo docker network create socarium-network
+    else
+        echo "Network socarium-network already exists."
+    fi
 
-    # Create directory with proper permissions (if not exists)
-    sudo mkdir -p $BASE_DIR || handle_error "Failed to create $BASE_DIR"
-    sudo chown -R $USER:$USER $BASE_DIR || handle_error "Failed to set ownership for $BASE_DIR"
+    # Add socarium-network to docker-compose.yml
+    cp $SOC_DIR/modules/wazuh/docker-compose.yml docker-compose.yml
+    # Check and handle SSL certificates folder
+    echo "Checking and preparing SSL certificates..."
+    if [ -d "config/wazuh_indexer_ssl_certs" ]; then
+        echo "Removing existing SSL certificates folder..."
+        rm -rf config/wazuh_indexer_ssl_certs
+    fi
 
-    # Clone Wazuh repository
-    git clone $WAZUH_REPO $BASE_DIR/wazuh-docker || handle_error "Error cloning Wazuh repository"
+    echo "Running certificate creation script..."
+    sudo docker-compose -f generate-indexer-certs.yml run --rm generator
 
-    # Navigate to the directory
-    cd $BASE_DIR/wazuh-docker/single-node || handle_error "Failed to change to Wazuh directory"
-
-    # Generate self-signed certificate
-    sudo docker-compose -f generate-indexer-certs.yml run --rm generator || handle_error "Failed to generate self-signed certificate"
-
-    # Start Wazuh containers
-    sudo docker-compose up -d || handle_error "Failed to start Wazuh containers"
-
-    echo "✅ Wazuh installation completed successfully!"
-    
-    # Optional: Clean up unused Docker containers, volumes, and images
-    # sudo docker system prune -f || handle_error "Failed to prune Docker system"
-}
+    echo "Starting Wazuh environment with Docker Compose..."
+    sudo docker-compose up -d
+    cd "$SOC_DIR"
+else
+    echo "Wazuh already installed."
+    #ensure_container_health "wazuh" "wazuh-docker/single-node/docker-compose.yml"
+    sudo docker ps --filter "name=wazuh"
+fi
