@@ -79,8 +79,17 @@ if [ ! -d "wazuh-docker" ]; then
     git clone https://github.com/wazuh/wazuh-docker.git -b v4.9.2
     cd $SOC_DIR/wazuh-docker/single-node/
 
-    echo "Setting max_map_count..."
-    sudo sysctl -w vm.max_map_count=262144
+    sysctl -w vm.max_map_count=262144
+    if grep -q "vm.max_map_count" /etc/sysctl.conf; then
+        echo "Updating existing vm.max_map_count value in /etc/sysctl.conf..."
+        sed -i 's/^vm\.max_map_count=.*/vm.max_map_count=262144/' /etc/sysctl.conf
+    else
+        echo "Adding vm.max_map_count to /etc/sysctl.conf..."
+        echo "vm.max_map_count=262144" >> /etc/sysctl.conf
+    fi
+
+    echo "Done. Current value of vm.max_map_count is:"
+    sysctl vm.max_map_count
 
     # Create the socarium-network if it doesn't exist
     echo "Ensuring socarium-network exists..."
