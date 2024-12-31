@@ -36,11 +36,13 @@ else
     echo "Modules directory already exists in $SOC_DIR. Skipping copy."
 fi
 
+cd "$SOC_DIR"
+
 # Shuffle installation
 echo "Installing Shuffle..."
 if [ ! -d "Shuffle" ]; then
     git clone https://github.com/Shuffle/Shuffle.git
-    cd Shuffle
+    cd $SOC_DIR/Shuffle
     # switch to stable version v1.4.2
     git checkout v1.4.2
     #check if directory shuffle-database exist
