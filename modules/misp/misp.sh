@@ -36,13 +36,15 @@ else
     echo "Modules directory already exists in $SOC_DIR. Skipping copy."
 fi
 
+cd "$SOC_DIR"
+
 # MISP installation
 echo "Installing MISP..."
 if [ ! -d "misp-docker" ]; then
     # clone official misp repository latest version
     git clone https://github.com/MISP/misp-docker.git
     #change directory to misp-docker after clone success
-    cd misp-docker
+    cd $SOC_DIR/misp-docker
     #copy template.env to .env
     cp template.env .env
     #add value for variable BASE_URL=https://localhost:10443/    
