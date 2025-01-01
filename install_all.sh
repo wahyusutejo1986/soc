@@ -204,6 +204,15 @@ else
     sudo docker ps --filter "name=misp"
 fi
 
+#Velociraptor installation
+echo "Installing Velociraptor..."
+    cd "$SOC_DIR/modules/velociraptor"
+    # Add Velociraptor-specific deployment steps here
+    sudo docker-compose up -d
+    log "Velociraptor deployed successfully."
+    cd $SOC_DIR
+}
+
 # Summary
 echo "Installation completed for:
 - Wazuh
