@@ -108,7 +108,7 @@ while true; do
         "6" "Deploy Grafana" \
         "7" "Deploy Yara" \
         "8" "Deploy OpenCTI" \
-        "9" "Velociraptor" \
+        "9" "Deploy Velociraptor" \
         "10" "Exit" 3>&1 1>&2 2>&3)
 
     case $CHOICE in
