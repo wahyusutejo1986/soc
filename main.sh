@@ -108,6 +108,15 @@ integration_wazuh_iris() {
 
 integration_wazuh_misp() {
         log "Integration Wazuh - MISP..."
+        sudo cp $BASE_DIR/modules/wazuh/integration-misp.py /var/lib/docker/volumes/single-node_wazuh_integrations/_data/integration-misp.py
+        sudo docker exec -ti single-node-wazuh.manager-1 chown root:wazuh /var/ossec/integrations/integration-misp.py
+        sudo docker exec -ti single-node-wazuh.manager-1 chmod 750 /var/ossec/integrations/integration-misp.py
+        sudo cp $BASE_DIR/modules/wazuh/local_rules.xml /var/lib/docker/volumes/single-node_wazuh_etc/_data/rules/local_rules.xml
+        sudo docker exec -ti single-node-wazuh.manager-1 chown wazuh:wazuh /var/ossec/etc/rules/local_rules.xml
+        sudo docker exec -ti single-node-wazuh.manager-1 chmod 550 /var/ossec/etc/rules/local_rules.xml
+        sudo docker-compose -f $BASE_DIR/wazuh-docker/single-node/docker-compose.yml restart
+        log "Integration Wazuh-MISP successfully."
+        cd $BASE_DIR
 }
 
 integration_misp_opencti() {
