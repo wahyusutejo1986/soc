@@ -118,7 +118,7 @@ socarium_automation() {
 
 socarium_config() {
     while true; do
-        SECONDARY_CHOICE=$(whiptail --title "Configuration Menu" --menu "Choose a configur>
+        SECONDARY_CHOICE=$(whiptail --title "Configuration Menu" --menu "Choose a configuration option:" 20 78 12 \
             "1" "Integration Wazuh - DFIR IRIS" \
             "2" "Integration Wazuh - MISP" \
             "3" "Integration MISP - OpenCTI" \
