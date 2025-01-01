@@ -87,6 +87,15 @@ deploy_opencti() {
     cd $BASE_DIR
 }
 
+deploy_velociraptor() {
+    log "Deploying Velociraptor..."
+    cd "$BASE_DIR/modules/velociraptor"
+    # Add Velociraptor-specific deployment steps here
+    sudo docker-compose up -d
+    log "Velociraptor deployed successfully."
+    cd $BASE_DIR
+}
+
 # Dropdown Menu
 while true; do
     CHOICE=$(whiptail --title "Socarium SOC Packages Deployment Menu" --menu "Choose an option:" 20 78 12 \
@@ -99,7 +108,8 @@ while true; do
         "6" "Deploy Grafana" \
         "7" "Deploy Yara" \
         "8" "Deploy OpenCTI" \
-        "9" "Exit" 3>&1 1>&2 2>&3)
+        "9" "Velociraptor" \
+        "10" "Exit" 3>&1 1>&2 2>&3)
 
     case $CHOICE in
         0) log "Installing prerequisites..."; sudo ./install_prerequisites.sh ;;
@@ -111,7 +121,8 @@ while true; do
         6) deploy_grafana ;;
         7) deploy_yara ;;
         8) deploy_opencti ;;
-        9) log "Exiting menu."; exit 0 ;;
+        9) deploy_velociraptor ;;
+        10) log "Exiting menu."; exit 0 ;;
         *) log "Invalid option. Please try again." ;;
     esac
 done
