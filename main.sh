@@ -98,6 +98,12 @@ deploy_velociraptor() {
 
 integration_wazuh_iris() {
         log "Integration Wazuh - DFIR IRIS..."
+        sudo cp $BASE_DIR/modules/wazuh/integration-iris.py /var/lib/docker/volumes/single-node_wazuh_integrations/_data/integration-iris.py
+        sudo docker exec -ti single-node-wazuh.manager-1 chown root:wazuh /var/ossec/integrations/integration-iris.py
+        sudo docker exec -ti single-node-wazuh.manager-1 chmod 750 /var/ossec/integrations/integration-iris.py
+        sudo docker-compose -f $BASE_DIR/wazuh-docker/single-node/docker-compose.yml restart
+        log "Integration Wazuh-DFIR IRIS successfully."
+        cd $BASE_DIR
 }
 
 integration_wazuh_misp() {
