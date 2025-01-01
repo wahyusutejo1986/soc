@@ -218,7 +218,8 @@ echo "Installation completed for:
 - Wazuh
 - DFIR IRIS
 - Shuffle
-- MISP"
+- MISP
+- Velociraptor"
 
 # Tips
 echo "Ensure all services are running properly. Use 'docker ps' to check containers or refer to individual documentation for further configurations."
