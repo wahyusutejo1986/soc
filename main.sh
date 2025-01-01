@@ -166,7 +166,7 @@ while true; do
         8) deploy_opencti ;;
         9) deploy_velociraptor ;;
         10) socarium_config ;;
-        10) log "Exiting menu."; exit 0 ;;
+        11) log "Exiting menu."; exit 0 ;;
         *) log "Invalid option. Please try again." ;;
     esac
 done
