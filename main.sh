@@ -96,6 +96,48 @@ deploy_velociraptor() {
     cd $BASE_DIR
 }
 
+integration_wazuh_iris() {
+        log "Integration Wazuh - DFIR IRIS..."
+}
+
+integration_wazuh_misp() {
+        log "Integration Wazuh - MISP..."
+}
+
+integration_misp_opencti() {
+        log "Integration MISP - OpenCTI..."
+}
+
+iris_modules() {
+        log "IRIS Modules..."
+}
+
+socarium_automation() {
+        log "Socarium Automation..."
+}
+
+socarium_config() {
+    while true; do
+        SECONDARY_CHOICE=$(whiptail --title "Configuration Menu" --menu "Choose a configur>
+            "1" "Integration Wazuh - DFIR IRIS" \
+            "2" "Integration Wazuh - MISP" \
+            "3" "Integration MISP - OpenCTI" \
+            "4" "DFIR IRIS Modules" \
+            "5" "Socarium Automation" \
+            "6" "Return to Main Menu" 3>&1 1>&2 2>&3)
+
+        case $SECONDARY_CHOICE in
+            1) integration_wazuh_iris ;;
+            2) integration_wazuh_misp ;;
+            3) integration_misp_opencti ;;
+            4) iris_modules ;;
+            5) socarium_automation ;;
+            6) log "Returning to Main Menu."; break ;; # Exit secondary menu
+            *) log "Invalid option. Please try again." ;;
+        esac
+    done
+}
+
 # Dropdown Menu
 while true; do
     CHOICE=$(whiptail --title "Socarium SOC Packages Deployment Menu" --menu "Choose an option:" 20 78 12 \
@@ -109,7 +151,8 @@ while true; do
         "7" "Deploy Yara" \
         "8" "Deploy OpenCTI" \
         "9" "Deploy Velociraptor" \
-        "10" "Exit" 3>&1 1>&2 2>&3)
+        "10" "Socarium Configurations" \
+        "11" "Exit" 3>&1 1>&2 2>&3)
 
     case $CHOICE in
         0) log "Installing prerequisites..."; sudo ./install_prerequisites.sh ;;
@@ -122,6 +165,7 @@ while true; do
         7) deploy_yara ;;
         8) deploy_opencti ;;
         9) deploy_velociraptor ;;
+        10) socarium_config ;;
         10) log "Exiting menu."; exit 0 ;;
         *) log "Invalid option. Please try again." ;;
     esac
