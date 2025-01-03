@@ -124,7 +124,12 @@ integration_misp_opencti() {
 }
 
 iris_modules() {
-        log "IRIS Modules..."
+        log "DFIR IRIS Modules..."
+        log "Deploy DFIR IRIS Module Wazuh Indexer"
+        cd $BASE_DIR/Modules/iris-wazuhindexer-module
+        chmod +x buildnpush2iris.sh
+        ./buildnpush2iris.sh
+        log "Deploy DFIR IRIS Module Investigator Platform"
 }
 
 socarium_automation() {
