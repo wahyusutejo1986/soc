@@ -14,6 +14,7 @@ echo "=============================="
 # Step 1: Update the system
 echo "Updating system packages..."
 sudo apt update -y
+sudo apt install python3-pip -y
 
 # Step 2: Install required packages
 echo "Installing required packages..."
