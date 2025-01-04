@@ -125,6 +125,9 @@ integration_misp_opencti() {
 
 iris_modules() {
         log "DFIR IRIS Modules..."
+        log "Install Prerequisites"
+        sudo apt install python3-pip -y
+        sudo apt install python3-venv -y
         log "Deploy DFIR IRIS Module Wazuh Indexer"
         cd $BASE_DIR/modules/iris-wazuhindexer-module
         chmod +x buildnpush2iris.sh
