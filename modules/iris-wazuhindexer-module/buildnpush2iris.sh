@@ -28,12 +28,8 @@ Run()
     }
 
     echo "[BuildnPUSH2IRIS] start configuration"
-    python3 -m venv venv
-    source venv/bin/activate
-    python3 -m pip install wheel build
-    python3 -m pip install setuptools
     python3 setup.py bdist_wheel
-    deactivate
+   
 
     latest=$(get_recent_file)
     module=${latest#"./dist/"}
