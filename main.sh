@@ -93,6 +93,7 @@ deploy_velociraptor() {
     # Add Velociraptor-specific deployment steps here
     sudo docker-compose up -d
     log "Velociraptor deployed"
+    cd $BASE_DIR
     log "Setup API file Integration DFIR IRIS"
     cd $BASE_DIR/modules/velociraptor/velociraptor
     sudo ./velociraptor --config server.config.yaml config api_client --name admin --role administrator api.config.yaml
