@@ -149,8 +149,13 @@ iris_modules() {
         cd $BASE_DIR/modules/iris-veloquarantine-module
         chmod +x buildnpush2iris.sh
         ./buildnpush2iris.sh
-        
-        
+        cd $BASE_DIR/modules/iris-veloquarantineremove-module
+        chmod +x buildnpush2iris.sh
+        ./buildnpush2iris.sh
+        cd $BASE_DIR/modules/iris-velo
+        chmod +x buildnpush2iris.sh
+        ./buildnpush2iris.sh
+        log "Deploy DFIR IRIS Modules successfully."
 }
 
 socarium_automation() {
