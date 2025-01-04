@@ -145,8 +145,11 @@ iris_modules() {
         cd $BASE_DIR/iris-web
         sudo docker-compose down
         sudo docker-compose up -d
-        cd $BASE_DIR
         log "Deploy DFIR IRIS Investigator Platform"
+        cd $BASE_DIR/modules/iris-veloquarantine-module
+        chmod +x buildnpush2iris.sh
+        ./buildnpush2iris.sh
+        
         
 }
 
