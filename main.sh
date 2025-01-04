@@ -128,6 +128,11 @@ iris_modules() {
         log "Install Prerequisites DFIR IRIS Modules"
         sudo apt install python3-pip -y
         sudo apt install python3-venv -y
+        python3 -m venv venv
+        source venv/bin/activate
+        python3 -m pip install wheel build
+        python3 -m pip install setuptools
+        deactivate
         log "Deploy DFIR IRIS Module Wazuh Indexer"
         cd $BASE_DIR/modules/iris-wazuhindexer-module
         chmod +x buildnpush2iris.sh
