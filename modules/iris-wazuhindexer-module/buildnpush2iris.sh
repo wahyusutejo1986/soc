@@ -27,9 +27,6 @@ Run()
         exit
     }
 
-    echo "[BuildnPUSH2IRIS] install prerequisites"
-    sudo apt install python3-pip -y
-    sudo apt install python3-venv -y
     echo "[BuildnPUSH2IRIS] start configuration"
     python3 -m venv venv
     source venv/bin/activate
