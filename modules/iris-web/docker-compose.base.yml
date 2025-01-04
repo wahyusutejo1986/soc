@@ -47,6 +47,7 @@ services:
       - iris-downloads:/home/iris/downloads
       - user_templates:/home/iris/user_templates
       - server_data:/home/iris/server_data
+      - ./docker/api.config.yaml:/iriswebapp/api.config.yaml:ro
     restart: always
     depends_on:
       - "rabbitmq"
@@ -76,6 +77,7 @@ services:
       - iris-downloads:/home/iris/downloads
       - user_templates:/home/iris/user_templates
       - server_data:/home/iris/server_data
+      - ./docker/api.config.yaml:/iriswebapp/api.config.yaml:ro
     depends_on:
       - "rabbitmq"
       - "db"
