@@ -132,7 +132,17 @@ iris_modules() {
         cd $BASE_DIR/modules/iris-wazuhindexer-module
         chmod +x buildnpush2iris.sh
         ./buildnpush2iris.sh
-        log "Deploy DFIR IRIS Module Investigator Platform"
+        cd $BASE_DIR
+        log "Prepare The Configuration..."
+        cd $BASE_DIR/modules/velociraptor/velociraptor
+        sudo ./velociraptor --config server.config.yaml config api_client --name admin --role administrator api.config.yaml
+        sudo cp api.config.yaml $BASE_DIR/iris-web/docker/
+        cd $BASE_DIR/iris-web
+        sudo docker-compose down
+        sudo docker-compose up -d
+        cd $BASE_DIR
+        log "Deploy DFIR IRIS Investigator Platform"
+        
 }
 
 socarium_automation() {
