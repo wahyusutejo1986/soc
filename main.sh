@@ -92,8 +92,16 @@ deploy_velociraptor() {
     cd "$BASE_DIR/modules/velociraptor"
     # Add Velociraptor-specific deployment steps here
     sudo docker-compose up -d
+    log "Velociraptor deployed"
+    log "Setup API file Integration DFIR IRIS"
+    cd $BASE_DIR/modules/velociraptor/velociraptor
+    sudo ./velociraptor --config server.config.yaml config api_client --name admin --role administrator api.config.yaml
+    sudo cp api.config.yaml $BASE_DIR/iris-web/docker/api.config.yaml
+    log "Restart DFIR IRIS..."
+    cd $BASE_DIR/iris-web
+    sudo docker-compose down
+    sudo docker-compose up -d
     log "Velociraptor deployed successfully."
-    cd $BASE_DIR
 }
 
 integration_wazuh_iris() {
@@ -123,39 +131,40 @@ integration_misp_opencti() {
         log "Integration MISP - OpenCTI..."
 }
 
-iris_modules() {
-        log "DFIR IRIS Modules..."
-        log "Install Prerequisites DFIR IRIS Modules"
-        sudo apt install python3-pip -y
-        sudo apt install python3-venv -y
-        python3 -m venv venv
-        source venv/bin/activate
-        python3 -m pip install wheel build
-        python3 -m pip install setuptools
-        deactivate
+iris_module_wazuhindexer() {
         log "Deploy DFIR IRIS Module Wazuh Indexer"
         cd $BASE_DIR/modules/iris-wazuhindexer-module
         chmod +x buildnpush2iris.sh
         ./buildnpush2iris.sh
+        log "Deploy DFIR IRIS Module Wazuh Indexer successfully."
         cd $BASE_DIR
-        log "Prepare The Configuration..."
-        cd $BASE_DIR/modules/velociraptor/velociraptor
-        sudo ./velociraptor --config server.config.yaml config api_client --name admin --role administrator api.config.yaml
-        sudo cp api.config.yaml $BASE_DIR/iris-web/docker/
-        cd $BASE_DIR/iris-web
-        sudo docker-compose down
-        sudo docker-compose up -d
-        log "Deploy DFIR IRIS Investigator Platform"
+}
+
+iris_module_veloquarantine() {
+        log "Deploy DFIR IRIS Module Velociraptor Quarantine"
         cd $BASE_DIR/modules/iris-veloquarantine-module
         chmod +x buildnpush2iris.sh
         ./buildnpush2iris.sh
+        log "Deploy DFIR IRIS Module Velociraptor Quarantine successfully."
+        cd $BASE_DIR
+}
+
+iris_module_veloquarantineremove() {
+        log "Deploy DFIR IRIS Module Velociraptor Remove Quarantine"
         cd $BASE_DIR/modules/iris-veloquarantineremove-module
         chmod +x buildnpush2iris.sh
         ./buildnpush2iris.sh
+        log "Deploy DFIR IRIS Module Velociraptor Remove Quarantine successfully."
+        cd $BASE_DIR
+}
+
+iris_module_veloartifact() {
+        log "Deploy DFIR IRIS Module Velociraptor Artifact"
         cd $BASE_DIR/modules/iris-velociraptorartifact-module
         chmod +x buildnpush2iris.sh
         ./buildnpush2iris.sh
-        log "Deploy DFIR IRIS Modules successfully."
+        log "Deploy DFIR IRIS Module Velociraptor Artifact successfully."
+        cd $BASE_DIR
 }
 
 socarium_automation() {
@@ -168,17 +177,23 @@ socarium_config() {
             "1" "Integration Wazuh - DFIR IRIS" \
             "2" "Integration Wazuh - MISP" \
             "3" "Integration MISP - OpenCTI" \
-            "4" "DFIR IRIS Modules" \
-            "5" "Socarium Automation" \
-            "6" "Return to Main Menu" 3>&1 1>&2 2>&3)
+            "4" "DFIR IRIS Module Wazuh Indexer" \
+            "5" "DFIR IRIS Module Velociraptor Quarantine"\
+            "6" "DFIR IRIS Module Velociraptor Remove Quarantine"\
+            "7" "DFIR IRIS Module Velociraptor Artifact"\
+            "8" "Socarium Automation" \
+            "9" "Return to Main Menu" 3>&1 1>&2 2>&3)
 
         case $SECONDARY_CHOICE in
             1) integration_wazuh_iris ;;
             2) integration_wazuh_misp ;;
             3) integration_misp_opencti ;;
-            4) iris_modules ;;
-            5) socarium_automation ;;
-            6) log "Returning to Main Menu."; break ;; # Exit secondary menu
+            4) iris_module_wazuhindexer ;;
+            5) iris_module_veloquarantine ;;
+            6) iris_module_veloquarantineremove ;;
+            7) iris_module_veloartifact ;;
+            8) socarium_automation ;;
+            9) log "Returning to Main Menu."; break ;; # Exit secondary menu
             *) log "Invalid option. Please try again." ;;
         esac
     done
