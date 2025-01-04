@@ -102,6 +102,7 @@ deploy_velociraptor() {
     sudo docker-compose down
     sudo docker-compose up -d
     log "Velociraptor deployed successfully."
+    cd $BASE_DIR
 }
 
 integration_wazuh_iris() {
