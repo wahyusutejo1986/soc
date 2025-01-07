@@ -63,7 +63,8 @@ if [ ! -d "wazuh-docker" ]; then
 
     echo "Starting Wazuh environment with Docker Compose..."
     sudo docker-compose up -d
-    cp $SOC_DIR/modules/wazuh/wazuh_manager.conf config/wazuh_cluster/wazuh_manager.conf
+    sudo cp $SOC_DIR/modules/wazuh/wazuh_manager.conf config/wazuh_cluster/wazuh_manager.conf
+    sudo chown root:root config/wazuh_cluster/wazuh_manager.conf
     sudo docker-compose down
     sudo docker-compose up -d
     cd "$SOC_DIR"
