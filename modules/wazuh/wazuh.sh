@@ -24,9 +24,9 @@ cd "$SOC_DIR"
 # Wazuh installation
 echo "Installing Wazuh..."
 if [ ! -d "wazuh-docker" ]; then
-    #echo "Cloning Wazuh Docker repository..."
-    #git clone https://github.com/wazuh/wazuh-docker.git -b v4.9.2
-    cd $SOC_DIR/modules/wazuh/single-node/
+    echo "Cloning Wazuh Docker repository..."
+    git clone https://github.com/wazuh/wazuh-docker.git -b v4.9.2
+    cd $SOC_DIR/wazuh-docker/single-node/
 
     sysctl -w vm.max_map_count=262144
     if grep -q "vm.max_map_count" /etc/sysctl.conf; then
@@ -49,8 +49,9 @@ if [ ! -d "wazuh-docker" ]; then
         echo "Network socarium-network already exists."
     fi
 
-    # Add socarium-network to docker-compose.yml
-    #cp $SOC_DIR/modules/wazuh/docker-compose.yml docker-compose.yml
+    # Add config to docker
+    cp $SOC_DIR/modules/wazuh/docker-compose.yml docker-compose.yml
+    cp $SOC_DIR/modules/wazuh/wazuh_manager.conf config/wazuh_cluster/wazuh_manager.conf
     # Check and handle SSL certificates folder
     echo "Checking and preparing SSL certificates..."
     if [ -d "config/wazuh_indexer_ssl_certs" ]; then
