@@ -51,7 +51,6 @@ if [ ! -d "wazuh-docker" ]; then
 
     # Add config to docker
     cp $SOC_DIR/modules/wazuh/docker-compose.yml docker-compose.yml
-    cp $SOC_DIR/modules/wazuh/wazuh_manager.conf config/wazuh_cluster/wazuh_manager.conf
     # Check and handle SSL certificates folder
     echo "Checking and preparing SSL certificates..."
     if [ -d "config/wazuh_indexer_ssl_certs" ]; then
@@ -63,6 +62,9 @@ if [ ! -d "wazuh-docker" ]; then
     sudo docker-compose -f generate-indexer-certs.yml run --rm generator
 
     echo "Starting Wazuh environment with Docker Compose..."
+    sudo docker-compose up -d
+    cp $SOC_DIR/modules/wazuh/wazuh_manager.conf config/wazuh_cluster/wazuh_manager.conf
+    sudo docker-compose down
     sudo docker-compose up -d
     cd "$SOC_DIR"
 else
