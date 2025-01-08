@@ -124,9 +124,13 @@ integration_wazuh_misp() {
         sudo cp $BASE_DIR/modules/wazuh/local_rules.xml /var/lib/docker/volumes/single-node_wazuh_etc/_data/rules/local_rules.xml
         sudo docker exec -ti single-node-wazuh.manager-1 chown wazuh:wazuh /var/ossec/etc/rules/local_rules.xml
         sudo docker exec -ti single-node-wazuh.manager-1 chmod 550 /var/ossec/etc/rules/local_rules.xml
-        sudo docker-compose -f $BASE_DIR/wazuh-docker/single-node/docker-compose.yml restart
-        log "Integration Wazuh-MISP successfully."
+        cd $BASE_DIR/modules/wazuh
+        chmod +x wazuh-misp.sh
+        ./wazuh-misp.sh
         cd $BASE_DIR
+        sudo docker-compose -f $BASE_DIR/wazuh-docker/single-node/docker-compose.yml down
+        sudo docker-compose -f $BASE_DIR/wazuh-docker/single-node/docker-compose.yml up -d
+        log "Integration Wazuh-MISP successfully."
 }
 
 integration_misp_opencti() {
