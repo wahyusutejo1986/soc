@@ -9,7 +9,7 @@ CONFIG_FILE="$SOC_DIR/wazuh-docker/single-node/config/wazuh_cluster/wazuh_manage
 MISP_CONFIG=$(cat <<'EOF'
 <!--integration-misp-->
 <integration>
-  <name>custom-misp</name>
+  <name>integration-misp.py</name>
   <group>sysmon_event1,sysmon_event3,sysmon_event6,sysmon_event7,sysmon_event_15,sysmon_event_22,syscheck</group>
   <alert_format>json</alert_format>
 </integration>
