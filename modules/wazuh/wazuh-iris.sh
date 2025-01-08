@@ -5,8 +5,8 @@ SOC_DIR="/home/$(logname)/soc"
 # File path to wazuh_manager.conf
 CONFIG_FILE="$SOC_DIR/wazuh-docker/single-node/config/wazuh_cluster/wazuh_manager.conf"
 
-# MISP configuration to add
-MISP_CONFIG=$(cat <<'EOF'
+# IRIS configuration to add
+IRIS_CONFIG=$(cat <<'EOF'
 <!--integration-iris-->
   <integration>
     <name>integration-iris.py</name>
@@ -39,9 +39,9 @@ else
   TEMP_FILE=$(mktemp)
 
   # Insert the IRIS configuration above </ossec_config>
-  sudo awk -v misp_config="$MISP_CONFIG" '
+  sudo awk -v iris_config="$IRIS_CONFIG" '
     /<\/ossec_config>/ {
-      print "\n" misp_config "\n"
+      print "\n" iris_config "\n"
     }
     { print }
   ' "$CONFIG_FILE" > "$TEMP_FILE"
