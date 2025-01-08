@@ -39,12 +39,12 @@ else
   # Insert the MISP configuration above </ossec_config>
   sudo awk -v misp_config="$MISP_CONFIG" '
     /<\/ossec_config>/ {
-      print "\n# MISP Integration Configuration\n" misp_config "\n"
+      print "\n" misp_config "\n"
     }
     { print }
   ' "$CONFIG_FILE" > "$TEMP_FILE"
 
   # Replace the original file with the modified file
   sudo mv "$TEMP_FILE" "$CONFIG_FILE"
-  echo "MISP configuration has been successfully added above </ossec_config> in $CONFIG_FILE."
+  echo "MISP configuration has been successfully."
 fi
